@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
     private Rigidbody2D rb;
-    private bool isGrounded;
+    public bool isGrounded;
     private bool facingRight = true;
 
     [Header("Flip Settings")]
