@@ -401,7 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f98e57bfdfe974699d3d8e492a8c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 0.7
+  moveSpeed: 1
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
   groundMask:
@@ -409,13 +409,10 @@ MonoBehaviour:
     m_Bits: 64
   player: {fileID: 0}
   playerTag: Player
-  detectLeft: 2
+  detectLeft: 0.5
   detectRight: 6
   detectUp: 3
   detectDown: 1
-  enableShooting: 0
-  attackRange: 5
-  attackInterval: 2
   graphics: {fileID: 0}
   stopAtEdge: 1
 --- !u!114 &653251711636155172
@@ -434,9 +431,15 @@ MonoBehaviour:
   playerTag: Player
   useRanged: 0
   manualFireOnly: 0
+  useRectDetection: 1
+  detectLeft: 0.5
+  detectRight: 6
+  detectUp: 3
+  detectDown: 1
   detectionRange: 6
   attackRange: 5
   fireInterval: 1.5
+  fireForwardOnly: 1
   overrideBulletSpeed: 0
   bulletSpeed: 10
   overrideBulletDamage: 0
