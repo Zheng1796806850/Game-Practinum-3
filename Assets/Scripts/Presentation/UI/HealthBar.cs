@@ -38,7 +38,7 @@ public class HealthBar : MonoBehaviour
         }
     }
 
-    private void OnHealthChanged(int current, int max)
+    private void OnHealthChanged(float current, float max)
     {
         if (slider != null)
         {

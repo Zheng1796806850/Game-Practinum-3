@@ -32,6 +32,11 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.IsFrozen)
+        {
+            return;
+        }
+
         if (player == null) return;
         attackTimer -= Time.deltaTime;
         float dist = Vector2.Distance(transform.position, player.position);

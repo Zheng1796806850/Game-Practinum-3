@@ -3,18 +3,28 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Projectile : MonoBehaviour
 {
+    public enum ProjectileType { Normal, Fire, Ice }
+
     [Header("Stats")]
-    [SerializeField] private int baseDamage = 1;
+    [SerializeField] private float baseDamage = 1;
     [SerializeField] private float lifeTime = 5f;
     [SerializeField] private bool destroyOnHit = true;
     [SerializeField] private int maxPierce = 0;
     [SerializeField] private LayerMask hitMask;
+
+    [Header("Effect")]
+    public ProjectileType projectileType = ProjectileType.Normal;
+    public float fireDotDuration = 3f;
+    public float fireDotInterval = 1f;
+    public float fireDotDamage = 1;
+    public float iceFreezeDuration = 2f;
+
     private Rigidbody2D rb;
     private GameObject owner;
     private int remainingPierce;
     private float lifeTimer;
 
-    public void Init(GameObject owner, int damage, Vector2 velocity)
+    public void Init(GameObject owner, float damage, Vector2 velocity)
     {
         this.owner = owner;
         this.baseDamage = damage;
@@ -57,6 +67,18 @@ public class Projectile : MonoBehaviour
         if (other.TryGetComponent<IDamageable>(out var dmg))
         {
             dmg.ApplyDamage(baseDamage, owner);
+
+            if (other.TryGetComponent<Health>(out var health))
+            {
+                if (projectileType == ProjectileType.Fire)
+                {
+                    health.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+                }
+                else if (projectileType == ProjectileType.Ice)
+                {
+                    health.ApplyFreeze(iceFreezeDuration);
+                }
+            }
         }
 
         if (remainingPierce > 0)

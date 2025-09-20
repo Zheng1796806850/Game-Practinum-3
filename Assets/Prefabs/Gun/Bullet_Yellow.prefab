@@ -172,3 +172,8 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 193
+  projectileType: 0
+  fireDotDuration: 0
+  fireDotInterval: 0
+  fireDotDamage: 0
+  iceFreezeDuration: 0

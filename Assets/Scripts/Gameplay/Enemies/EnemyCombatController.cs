@@ -42,11 +42,13 @@ public class EnemyCombatController : MonoBehaviour
     private Weapon weapon;
     private float fireTimer;
     private Dictionary<object, float> lastTouchTime = new Dictionary<object, float>();
+    private Health health;
 
     void Awake()
     {
         weapon = GetComponent<Weapon>();
         fireTimer = 0f;
+        health = GetComponent<Health>();
     }
 
     void Start()
@@ -60,6 +62,12 @@ public class EnemyCombatController : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.IsFrozen)
+        {
+            fireTimer = fireInterval;
+            return;
+        }
+
         fireTimer -= Time.deltaTime;
 
         if (useRanged && !manualFireOnly && player != null)
@@ -100,7 +108,6 @@ public class EnemyCombatController : MonoBehaviour
 
         weapon.Fire(dir);
     }
-
 
     private bool IsPlayerInRectZone()
     {

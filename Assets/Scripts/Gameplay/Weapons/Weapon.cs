@@ -6,7 +6,7 @@ public class Weapon : MonoBehaviour
     public GameObject bulletPrefab;
     public Transform firePoint;
     public float bulletSpeed = 10f;
-    public int damage = 1;
+    public float damage = 1f;
     public GameObject owner;
 
     public void Fire(Vector2 direction)

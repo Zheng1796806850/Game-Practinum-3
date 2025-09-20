@@ -52,12 +52,18 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.IsFrozen)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         if (player == null)
         {
             Patrol();
             return;
         }
-        
+
         if (IsPlayerInDetectionZone())
         {
             MoveTowardsPlayer();
@@ -74,7 +80,7 @@ public class EnemyPatrol : MonoBehaviour
         {
             Patrol();
         }
-        
+
     }
 
     private void Patrol()
@@ -104,7 +110,6 @@ public class EnemyPatrol : MonoBehaviour
 
         if ((dir > 0f && !facingRight) || (dir < 0f && facingRight)) Flip();
     }
-
     private bool CanMoveForward()
     {
         if (groundCheck == null) return true;
@@ -122,12 +127,10 @@ public class EnemyPatrol : MonoBehaviour
                localPos.y <= detectUp;
     }
 
-    
     private bool IsPlayerInAttackRange()
     {
         return Vector2.Distance(transform.position, player.position) <= attackRange;
     }
-    
 
     private void Flip()
     {

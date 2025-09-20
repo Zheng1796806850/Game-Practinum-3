@@ -12,9 +12,9 @@ public class PlayerHealth : MonoBehaviour
         health.OnDied += OnDied;
     }
 
-    private void OnHealthChanged(int current, int max)
+    private void OnHealthChanged(float current, float max)
     {
-        Debug.Log("Player HP: " + current + "/" + max);
+        Debug.Log("Player HP: " + current.ToString("F1") + "/" + max.ToString("F1"));
     }
 
     private void OnDied(GameObject killer)
