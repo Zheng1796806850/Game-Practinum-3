@@ -7,6 +7,7 @@ public class Weapon : MonoBehaviour
     public Transform firePoint;
     public float bulletSpeed = 10f;
     public int damage = 1;
+    public GameObject owner;
 
     public void Fire(Vector2 direction)
     {
@@ -18,6 +19,6 @@ public class Weapon : MonoBehaviour
 
         Vector2 vel = direction.normalized * bulletSpeed;
         if (rb != null) rb.linearVelocity = vel;
-        if (proj != null) proj.Init(owner: gameObject, damage: damage, velocity: vel);
+        if (proj != null) proj.Init(owner: owner, damage: damage, velocity: vel);
     }
 }

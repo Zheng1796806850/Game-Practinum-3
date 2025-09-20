@@ -6,7 +6,7 @@ public class Health : MonoBehaviour, IDamageable
     public int Current { get; private set; }
 
     public System.Action<int, int> OnChanged;
-    public System.Action<GameObject> OnDied; // ´«µÝ»÷É±Õß
+    public System.Action<GameObject> OnDied;
 
     void Awake() => Current = maxHP;
 
