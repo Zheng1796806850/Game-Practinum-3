@@ -2,21 +2,48 @@ using UnityEngine;
 
 public class SwitchGate : MonoBehaviour
 {
-    [SerializeField] private BulletSwitch[] switches;
+    [SerializeField] private BulletSwitch[] bulletSwitches;
+    [SerializeField] private PressurePlateSwitch[] pressurePlates;
     [SerializeField] private DoorLinearOpener door;
-    private bool opened;
+    [SerializeField] private bool autoClose = true;
+
+    private bool lastAllActive = false;
 
     void Update()
     {
-        if (opened) return;
-        if (switches == null || switches.Length == 0 || door == null) return;
+        if (door == null) return;
 
-        for (int i = 0; i < switches.Length; i++)
+        bool allActive = true;
+
+        if (bulletSwitches != null && bulletSwitches.Length > 0)
         {
-            if (switches[i] == null || !switches[i].IsActivated) return;
+            for (int i = 0; i < bulletSwitches.Length; i++)
+            {
+                if (bulletSwitches[i] == null || !bulletSwitches[i].IsActivated)
+                {
+                    allActive = false;
+                    break;
+                }
+            }
         }
 
-        opened = true;
-        door.Open();
+        if (allActive && pressurePlates != null && pressurePlates.Length > 0)
+        {
+            for (int i = 0; i < pressurePlates.Length; i++)
+            {
+                if (pressurePlates[i] == null || !pressurePlates[i].IsActivated)
+                {
+                    allActive = false;
+                    break;
+                }
+            }
+        }
+
+        if (allActive != lastAllActive)
+        {
+            if (allActive) door.Open();
+            else if (autoClose) door.Close();
+            lastAllActive = allActive;
+        }
     }
 }
