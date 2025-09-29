@@ -196,7 +196,7 @@ MonoBehaviour:
   pauseAtBottom: 0.25
   startWidth: 0.5
   unfreezeMode: 0
-  defaultFreezeDuration: 1
+  defaultFreezeDuration: 3
   meltWhenHitByFireInTimedMode: 1
   lavaDamage: 1
   playerTag: Player
