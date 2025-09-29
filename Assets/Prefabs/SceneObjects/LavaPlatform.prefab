@@ -187,28 +187,23 @@ MonoBehaviour:
   waterRenderer: {fileID: 3273160666925011253}
   iceVisualRoot: {fileID: 8969653777601919765}
   iceRenderer: {fileID: 8874475198809262506}
-  clampMode: 0
-  clampBehavior: 0
-  xRangeHalfWidth: 0.07
-  zoneHalfWidth: 0.35
-  zoneHeight: 0.3
-  zoneEnterPad: 0.04
-  zoneExitPad: 0.08
-  clampRiseSpeed: 12
-  clampFallSpeed: 20
-  virtualTriggerHeight: 12
-  playerTag: Player
-  maxHeight: 20
+  fountainType: 0
+  maxHeight: 6
   minHeight: 0.2
-  oscillationSpeed: 1.5
-  jitterStrength: 0.15
-  oscillationAmplitudeFactor: 0.6
+  riseDuration: 0.75
+  fallDuration: 0.9
+  pauseAtTop: 1
+  pauseAtBottom: 0.25
   startWidth: 0.5
-  unfreezeMode: 1
-  defaultFreezeDuration: 3
+  unfreezeMode: 0
+  defaultFreezeDuration: 1
   meltWhenHitByFireInTimedMode: 1
+  lavaDamage: 1
+  playerTag: Player
   hitTrigger: {fileID: 6296836789913819608}
   iceCollider: {fileID: 7498439120437761903}
+  gizmosShowRealtimePoint: 1
+  gizmosPreviewScaleX: 0
 --- !u!61 &8508049898404791811
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -418,8 +413,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: cb1969dee1a61f241aeb6cf8a9525711, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 3f0f91130621e36449356a6e1a76c55c, type: 3}
+  m_Color: {r: 0, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2

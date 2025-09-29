@@ -843,7 +843,7 @@ MonoBehaviour:
   iceBulletPrefab: {fileID: 5726331413828171566, guid: ae025ff7ea7ed2c459b6ddf9a5fe7dd9, type: 3}
   switchKey: 113
   bulletUI: {fileID: 0}
-  weaponPivot: {fileID: 0}
+  weaponPivot: {fileID: 1069770987965009820}
 --- !u!114 &6398408641415069543
 MonoBehaviour:
   m_ObjectHideFlags: 0

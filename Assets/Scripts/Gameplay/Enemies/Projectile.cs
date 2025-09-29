@@ -61,22 +61,18 @@ public class Projectile : MonoBehaviour
             if (otherRoot == owner || otherRoot.transform.root == owner.transform.root) return;
         }
 
-        // 伤害
         if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
         {
             damageable.ApplyDamage(baseDamage, owner);
         }
 
-        // 特效
         if (projectileType == ProjectileType.Fire)
         {
-            // 对有Health的目标施加DOT
             if (otherRoot.TryGetComponent<Health>(out var health))
             {
                 health.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
             }
 
-            // 尝试融化水（兼容子物体Collider/父物体脚本）
             if (other.TryGetComponent<WaterPlatform>(out var water))
             {
                 water.TryMeltFromFire();
@@ -89,7 +85,6 @@ public class Projectile : MonoBehaviour
         }
         else if (projectileType == ProjectileType.Ice)
         {
-            // 冻结：Health 或 IFreezable（水实现了IFreezable）
             if (otherRoot.TryGetComponent<Health>(out var health))
             {
                 health.ApplyFreeze(iceFreezeDuration);
@@ -105,7 +100,6 @@ public class Projectile : MonoBehaviour
             }
         }
 
-        // 穿透/销毁
         if (remainingPierce > 0)
         {
             remainingPierce--;

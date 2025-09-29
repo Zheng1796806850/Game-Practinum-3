@@ -8,17 +8,10 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         RequireFire
     }
 
-    public enum ClampMode
+    public enum FountainType
     {
-        XRangeOnly,
-        ClampZone,
-        VirtualTrigger
-    }
-
-    public enum ClampBehavior
-    {
-        HoldAtMax,        // 限高时：直接贴住玩家脚底
-        OscillateToMax    // 限高时：继续起伏，但最高不超过玩家脚底
+        Normal,
+        Lava
     }
 
     [Header("Visuals")]
@@ -27,25 +20,14 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     [SerializeField] private Transform iceVisualRoot;
     [SerializeField] private SpriteRenderer iceRenderer;
 
-    [Header("Clamp")]
-    [SerializeField] private ClampMode clampMode = ClampMode.XRangeOnly;
-    [SerializeField] private ClampBehavior clampBehavior = ClampBehavior.HoldAtMax;
-    [SerializeField] private float xRangeHalfWidth = 0.45f;
-    [SerializeField] private float zoneHalfWidth = 0.35f;
-    [SerializeField] private float zoneHeight = 0.3f;
-    [SerializeField] private float zoneEnterPad = 0.04f;
-    [SerializeField] private float zoneExitPad = 0.08f;
-    [SerializeField] private float clampRiseSpeed = 12f;   // 进入限高时向上追近速度
-    [SerializeField] private float clampFallSpeed = 20f;   // 离开限高时放开回落速度
-    [SerializeField] private float virtualTriggerHeight = 12f; // VirtualTrigger 的检测高度（独立于 maxHeight）
-
     [Header("General")]
-    [SerializeField] private string playerTag = "Player";
-    [SerializeField] private float maxHeight = 4f;          // 自由起伏时的最高高度
+    [SerializeField] private FountainType fountainType = FountainType.Normal;
+    [SerializeField] private float maxHeight = 4f;
     [SerializeField] private float minHeight = 0.2f;
-    [SerializeField] private float oscillationSpeed = 1.5f;
-    [SerializeField] private float jitterStrength = 0.15f;
-    [SerializeField] private float oscillationAmplitudeFactor = 1.0f;
+    [SerializeField] private float riseDuration = 1.5f;
+    [SerializeField] private float fallDuration = 1.5f;
+    [SerializeField] private float pauseAtTop = 0.5f;
+    [SerializeField] private float pauseAtBottom = 0.5f;
     [SerializeField] private float startWidth = 0.5f;
 
     [Header("Unfreeze Rule")]
@@ -53,22 +35,33 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     [SerializeField] private float defaultFreezeDuration = 3f;
     [SerializeField] private bool meltWhenHitByFireInTimedMode = true;
 
+    [Header("Lava Settings")]
+    [SerializeField] private float lavaDamage = 1f;
+    [SerializeField] private string playerTag = "Player";
+
     [Header("Colliders")]
     [SerializeField] private BoxCollider2D hitTrigger;
     [SerializeField] private BoxCollider2D iceCollider;
 
-    private Transform player;
-    private Collider2D playerCol;
+#if UNITY_EDITOR
+    [Header("Gizmos")]
+    [SerializeField] private bool gizmosShowRealtimePoint = true;
+    [SerializeField] private float gizmosPreviewScaleX = 0.0f;
+#endif
+
     private bool isFrozen;
     private float freezeTimer;
-    private float seed;
     private float currentVisualWidth;
     private float currentVisualHeight;
-    private bool clampActive;
+
+    private float cycleTimer;
+    private enum CycleState { Rising, PauseTop, Falling, PauseBottom }
+    private CycleState cycleState = CycleState.Rising;
+
+    private Collider2D playerCol;
 
     void Awake()
     {
-        seed = Random.value * 1000f;
         if (waterVisualRoot != null) waterVisualRoot.localScale = Vector3.one;
         if (iceVisualRoot != null) iceVisualRoot.localScale = Vector3.one;
         if (hitTrigger != null) hitTrigger.transform.localScale = Vector3.one;
@@ -91,18 +84,17 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
+
+        cycleTimer = 0f;
+        cycleState = CycleState.Rising;
     }
 
     void Start()
     {
-        if (player == null && !string.IsNullOrEmpty(playerTag))
+        if (!string.IsNullOrEmpty(playerTag))
         {
             var go = GameObject.FindGameObjectWithTag(playerTag);
-            if (go != null)
-            {
-                player = go.transform;
-                playerCol = go.GetComponent<Collider2D>();
-            }
+            if (go != null) playerCol = go.GetComponent<Collider2D>();
         }
     }
 
@@ -110,120 +102,59 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     {
         if (isFrozen)
         {
-            if (unfreezeMode == UnfreezeMode.TimedByBullet)
+            if (unfreezeMode == UnfreezeMode.TimedByBullet && freezeTimer > 0f)
             {
-                if (freezeTimer > 0f)
-                {
-                    freezeTimer -= Time.deltaTime;
-                    if (freezeTimer <= 0f) Unfreeze();
-                }
+                freezeTimer -= Time.deltaTime;
+                if (freezeTimer <= 0f) Unfreeze();
             }
             return;
         }
 
-        UpdateClampState();
+        UpdateFountainMotion();
 
-        // 当前实际高度（用于平滑）
-        float curH = (waterRenderer != null) ? waterRenderer.size.y : minHeight;
-
-        float targetH;
-
-        if (clampActive && playerCol != null)
-        {
-            // 允许的最高高度 = 玩家脚底到喷口的垂直距离（不再受 maxHeight 限制）
-            float footDelta = playerCol.bounds.min.y - transform.position.y;
-            float allowedMax = Mathf.Max(minHeight, footDelta);
-
-            if (clampBehavior == ClampBehavior.HoldAtMax)
-            {
-                // 直接把高度推到玩家脚底（带平滑）
-                targetH = Mathf.MoveTowards(curH, allowedMax, clampRiseSpeed * Time.deltaTime);
-            }
-            else // OscillateToMax
-            {
-                float t = Time.time * oscillationSpeed;
-                float osc01 = 0.5f + 0.5f * Mathf.Sin(t);
-                float noise = (Mathf.PerlinNoise(seed, t) - 0.5f) * 2f * jitterStrength;
-                float k = Mathf.Clamp01(osc01 * Mathf.Max(0f, oscillationAmplitudeFactor) + noise * 0.25f);
-                float oscH = Mathf.Lerp(minHeight, allowedMax, k);
-                // 为了更容易“摸到”脚底，向上追一点
-                float lifted = Mathf.MoveTowards(curH, allowedMax, clampRiseSpeed * Time.deltaTime);
-                targetH = Mathf.Max(oscH, lifted);
-            }
-        }
-        else
-        {
-            // 非限高：常规起伏（在 minHeight..maxHeight 之间）
-            float t = Time.time * oscillationSpeed;
-            float osc01 = 0.5f + 0.5f * Mathf.Sin(t);
-            float noise = (Mathf.PerlinNoise(seed, t) - 0.5f) * 2f * jitterStrength;
-            float k = Mathf.Clamp01(osc01 * Mathf.Max(0f, oscillationAmplitudeFactor) + noise * 0.25f);
-            float freeH = Mathf.Lerp(minHeight, maxHeight, k);
-            // 离开限高后不要瞬间弹回，做个下落平滑
-            targetH = Mathf.MoveTowards(curH, freeH, clampFallSpeed * Time.deltaTime);
-        }
-
-        ApplyWaterHeight(targetH);
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
     }
 
-    private void UpdateClampState()
+    private void UpdateFountainMotion()
     {
-        if (playerCol == null)
-        {
-            clampActive = false;
-            return;
-        }
+        float targetH = GetSimulatedHeightAtTime(cycleTimer);
 
-        // 统一用碰撞体的世界中心与脚点
-        float px = playerCol.bounds.center.x;
-        float footY = playerCol.bounds.min.y;
-        float nozzleY = transform.position.y;
-        float selfX = transform.position.x;
+        cycleTimer += Time.deltaTime;
+        float cycleLen = riseDuration + pauseAtTop + fallDuration + pauseAtBottom;
+        if (cycleTimer >= cycleLen) cycleTimer -= cycleLen;
 
-        // 给横向范围加上玩家半宽，避免 pivot 偏移带来的误判
-        float playerHalfW = playerCol.bounds.extents.x;
-
-        if (clampMode == ClampMode.XRangeOnly)
-        {
-            float range = xRangeHalfWidth + playerHalfW;
-            clampActive = Mathf.Abs(px - selfX) <= range;
-            return;
-        }
-
-        if (clampMode == ClampMode.ClampZone)
-        {
-            float dx = Mathf.Abs(px - selfX);
-
-            // Allow the player to drive the water column all the way up to its maximum
-            // height rather than dropping the clamp state as soon as their feet leave
-            // the small trigger zone near the base of the fountain.
-            float coreTop = nozzleY + Mathf.Max(zoneHeight, maxHeight);
-            float enterTop = nozzleY + Mathf.Max(zoneHeight + zoneEnterPad, maxHeight);
-            float exitTop = nozzleY + Mathf.Max(zoneHeight + zoneExitPad, maxHeight);
-
-            bool insideCore = dx <= (zoneHalfWidth + playerHalfW) && footY <= coreTop;
-            bool insideEnter = dx <= (zoneHalfWidth + playerHalfW + zoneEnterPad) && footY <= enterTop;
-            bool insideExit = dx <= (zoneHalfWidth + playerHalfW + zoneExitPad) && footY <= exitTop;
-
-            if (!clampActive) { if (insideCore || insideEnter) clampActive = true; }
-            else { if (!insideExit) clampActive = false; }
-            return;
-        }
-
-        if (clampMode == ClampMode.VirtualTrigger)
-        {
-            float halfW = Mathf.Max(xRangeHalfWidth, currentVisualWidth * 0.5f) + playerHalfW;
-            float h = Mathf.Max(0.01f, virtualTriggerHeight); // 独立高度，不用 maxHeight
-            Bounds box = new Bounds(
-                new Vector3(selfX, nozzleY + h * 0.5f, 0f),
-                new Vector3(halfW * 2f, h, 0.1f)
-            );
-            clampActive = box.Intersects(playerCol.bounds);
-        }
+        ApplyWaterHeight(targetH);
     }
 
+    private float GetSimulatedHeightAtTime(float t)
+    {
+        float cycleLen = riseDuration + pauseAtTop + fallDuration + pauseAtBottom;
+        float cycleT = t % cycleLen;
+
+        if (cycleT < riseDuration)
+        {
+            float tNorm = cycleT / riseDuration;
+            float k = 1f - (1f - tNorm) * (1f - tNorm);
+            return Mathf.Lerp(minHeight, maxHeight, k);
+        }
+        cycleT -= riseDuration;
+
+        if (cycleT < pauseAtTop)
+        {
+            return maxHeight;
+        }
+        cycleT -= pauseAtTop;
+
+        if (cycleT < fallDuration)
+        {
+            float tNorm = cycleT / fallDuration;
+            float k = tNorm * tNorm;
+            return Mathf.Lerp(maxHeight, minHeight, k);
+        }
+
+        return minHeight;
+    }
 
     private void ApplyWaterHeight(float h)
     {
@@ -268,7 +199,6 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     {
         isFrozen = true;
 
-        // 不再把冻结高度上限夹到 maxHeight，避免被强行压低
         float h = Mathf.Max(minHeight, heightAtFreeze);
 
         ReadVisualWH();
@@ -321,19 +251,17 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         if (iceRenderer != null) iceRenderer.enabled = active;
     }
 
-    // IFreezable
     public void ApplyFreeze(float duration)
     {
         if (!isFrozen)
         {
-            // 冻结时取“当前应有的高度”，保证冰柱与此刻水柱无缝衔接
             float curH = (waterRenderer != null) ? waterRenderer.size.y : minHeight;
-            Freeze(duration, curH);
+            Freeze(defaultFreezeDuration, curH);
         }
         else
         {
             if (unfreezeMode == UnfreezeMode.TimedByBullet)
-                freezeTimer = Mathf.Max(freezeTimer, duration);
+                freezeTimer = Mathf.Max(freezeTimer, defaultFreezeDuration);
         }
     }
 
@@ -344,31 +272,70 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         else if (meltWhenHitByFireInTimedMode) Unfreeze();
     }
 
+    void OnTriggerStay2D(Collider2D other)
+    {
+        if (fountainType == FountainType.Lava && !isFrozen)
+        {
+            if (other.CompareTag(playerTag))
+            {
+                if (other.TryGetComponent<IDamageable>(out var dmg))
+                {
+                    dmg.ApplyDamage(lavaDamage * Time.deltaTime, gameObject);
+                }
+            }
+        }
+    }
+
 #if UNITY_EDITOR
+    private float GetWaterWorldScaleY()
+    {
+        if (waterVisualRoot != null) return waterVisualRoot.lossyScale.y;
+        return transform.lossyScale.y;
+    }
+
     private void OnDrawGizmosSelected()
     {
-        if (playerCol == null) return;
+        Gizmos.color = (fountainType == FountainType.Lava) ? Color.red : Color.cyan;
+
+        int steps = 100;
+        float previewDuration = riseDuration + pauseAtTop + fallDuration + pauseAtBottom;
+        float stepTime = previewDuration / steps;
+
+        Vector3 basePos = transform.position;
+        float sY = Mathf.Abs(GetWaterWorldScaleY());
+        Vector3 prevPoint = basePos + Vector3.up * (GetSimulatedHeightAtTime(0f) * sY);
+        float dx = gizmosPreviewScaleX;
+
+        for (int i = 1; i <= steps; i++)
+        {
+            float t = i * stepTime;
+            float h = GetSimulatedHeightAtTime(t);
+            Vector3 point = basePos + new Vector3(dx * i / steps, h * sY, 0f);
+            Gizmos.DrawLine(prevPoint, point);
+            prevPoint = point;
+        }
 
         Gizmos.color = Color.yellow;
-        float selfX = transform.position.x;
-        float playerHalfW = playerCol.bounds.extents.x;
+        Vector3 a = basePos + Vector3.up * (minHeight * sY) + Vector3.left * 0.5f;
+        Vector3 b = basePos + Vector3.up * (minHeight * sY) + Vector3.right * 0.5f;
+        Gizmos.DrawLine(a, b);
+        a = basePos + Vector3.up * (maxHeight * sY) + Vector3.left * 0.5f;
+        b = basePos + Vector3.up * (maxHeight * sY) + Vector3.right * 0.5f;
+        Gizmos.DrawLine(a, b);
 
-        if (clampMode == ClampMode.XRangeOnly)
+        if (gizmosShowRealtimePoint)
         {
-            float range = xRangeHalfWidth + playerHalfW;
-            Gizmos.DrawLine(new Vector3(selfX - range, transform.position.y, 0),
-                            new Vector3(selfX - range, transform.position.y + 0.2f, 0));
-            Gizmos.DrawLine(new Vector3(selfX + range, transform.position.y, 0),
-                            new Vector3(selfX + range, transform.position.y + 0.2f, 0));
-        }
-        else if (clampMode == ClampMode.VirtualTrigger)
-        {
-            float halfW = Mathf.Max(xRangeHalfWidth, currentVisualWidth * 0.5f) + playerHalfW;
-            float h = Mathf.Max(0.01f, virtualTriggerHeight);
-            Gizmos.DrawWireCube(new Vector3(selfX, transform.position.y + h * 0.5f, 0),
-                                new Vector3(halfW * 2f, h, 0.1f));
+            float liveH = 0f;
+            if (waterRenderer != null)
+            {
+                liveH = waterRenderer.size.y * sY;
+            }
+            Vector3 p = basePos + Vector3.up * liveH;
+#if UNITY_EDITOR
+            UnityEditor.Handles.color = Color.white;
+            UnityEditor.Handles.DrawSolidDisc(p, Vector3.forward, 0.05f);
+#endif
         }
     }
 #endif
-
 }

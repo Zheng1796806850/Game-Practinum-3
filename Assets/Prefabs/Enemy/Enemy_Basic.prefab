@@ -413,7 +413,7 @@ MonoBehaviour:
   detectRight: 6
   detectUp: 3
   detectDown: 1
-  graphics: {fileID: 0}
+  graphics: {fileID: 1326028663991244193}
   stopAtEdge: 1
 --- !u!114 &653251711636155172
 MonoBehaviour:
