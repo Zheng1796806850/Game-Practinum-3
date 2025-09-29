@@ -195,9 +195,17 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         if (clampMode == ClampMode.ClampZone)
         {
             float dx = Mathf.Abs(px - selfX);
-            bool insideCore = dx <= (zoneHalfWidth + playerHalfW) && footY <= nozzleY + zoneHeight;
-            bool insideEnter = dx <= (zoneHalfWidth + playerHalfW + zoneEnterPad) && footY <= nozzleY + zoneHeight + zoneEnterPad;
-            bool insideExit = dx <= (zoneHalfWidth + playerHalfW + zoneExitPad) && footY <= nozzleY + zoneHeight + zoneExitPad;
+
+            // Allow the player to drive the water column all the way up to its maximum
+            // height rather than dropping the clamp state as soon as their feet leave
+            // the small trigger zone near the base of the fountain.
+            float coreTop = nozzleY + Mathf.Max(zoneHeight, maxHeight);
+            float enterTop = nozzleY + Mathf.Max(zoneHeight + zoneEnterPad, maxHeight);
+            float exitTop = nozzleY + Mathf.Max(zoneHeight + zoneExitPad, maxHeight);
+
+            bool insideCore = dx <= (zoneHalfWidth + playerHalfW) && footY <= coreTop;
+            bool insideEnter = dx <= (zoneHalfWidth + playerHalfW + zoneEnterPad) && footY <= enterTop;
+            bool insideExit = dx <= (zoneHalfWidth + playerHalfW + zoneExitPad) && footY <= exitTop;
 
             if (!clampActive) { if (insideCore || insideEnter) clampActive = true; }
             else { if (!insideExit) clampActive = false; }

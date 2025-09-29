@@ -34,19 +34,23 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
 
-        if (moveInput > 0 && !facingRight)
-        {
-            Flip();
-        }
-        else if (moveInput < 0 && facingRight)
-        {
-            Flip();
-        }
+        UpdateFacingByMouse();
     }
 
     private bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+    }
+
+    private void UpdateFacingByMouse()
+    {
+        if (Camera.main == null) return;
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        bool shouldFaceRight = mouseWorld.x >= transform.position.x;
+        if (shouldFaceRight != facingRight)
+        {
+            Flip();
+        }
     }
 
     private void Flip()
