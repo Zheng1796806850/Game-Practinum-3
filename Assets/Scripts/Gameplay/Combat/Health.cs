@@ -12,17 +12,48 @@ public class Health : MonoBehaviour, IDamageable
     public bool IsFrozen { get; private set; } = false;
     public System.Action<bool> OnFreezeStateChanged;
 
+    [Header("Shield")]
+    [SerializeField] private bool useShield = false;
+    [SerializeField] GameObject shieldBar;
+    [SerializeField] private float maxShield = 0f;
+    public float ShieldCurrent { get; private set; }
+    public System.Action<float, float> OnShieldChanged;
+    public System.Action OnShieldDepleted;
+
     private Coroutine fireDotRoutine;
     private Coroutine freezeRoutine;
 
-    void Awake() => Current = maxHP;
+    void Awake()
+    {
+        Current = maxHP;
+        ShieldCurrent = useShield ? maxShield : 0f;
+        if (!useShield) shieldBar.SetActive(false);
+    }
 
-    public void ApplyDamage(float amount, GameObject source)
+    public void ApplyDamage(DamageInfo info)
     {
         if (Current <= 0f) return;
-        Current -= amount;
-        OnChanged?.Invoke(Current, maxHP);
-        if (Current <= 0f) OnDied?.Invoke(source);
+
+        if (useShield && ShieldCurrent > 0f)
+        {
+            if (info.type == DamageType.Fire && info.amount > 0f)
+            {
+                ShieldCurrent = Mathf.Max(0f, ShieldCurrent - info.amount);
+                OnShieldChanged?.Invoke(ShieldCurrent, maxShield);
+                if (ShieldCurrent <= 0f) OnShieldDepleted?.Invoke();
+                if (ShieldCurrent <= 0f && shieldBar.activeSelf) shieldBar.SetActive(false);
+            }
+            return;
+        }
+
+        float amt = Mathf.Max(0f, info.amount);
+
+        if (amt > 0f)
+        {
+            Current -= amt;
+            OnChanged?.Invoke(Current, maxHP);
+            if (Current <= 0f) OnDied?.Invoke(info.source);
+        }
     }
 
     public void ApplyDot(float damage, float duration, float interval, GameObject source)
@@ -44,7 +75,7 @@ public class Health : MonoBehaviour, IDamageable
         float timer = 0f;
         while (timer < duration && Current > 0)
         {
-            ApplyDamage(damage, source);
+            ApplyDamage(new DamageInfo(damage, DamageType.Fire, source));
             yield return new WaitForSeconds(interval);
             timer += interval;
         }

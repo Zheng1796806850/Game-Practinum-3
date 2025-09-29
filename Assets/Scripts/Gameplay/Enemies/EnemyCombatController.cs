@@ -160,8 +160,8 @@ public class EnemyCombatController : MonoBehaviour
             float tNow = Time.time;
             if (!lastTouchTime.TryGetValue(key, out var tLast) || tNow - tLast >= touchCooldown)
             {
-                dmg.ApplyDamage(touchDamage, gameObject);
-                lastTouchTime[key] = tNow;
+                dmg.ApplyDamage(new DamageInfo(touchDamage, DamageType.Normal, gameObject));
+                lastTouchTime[key = dmg] = tNow;
             }
         }
     }

@@ -61,9 +61,15 @@ public class Projectile : MonoBehaviour
             if (otherRoot == owner || otherRoot.transform.root == owner.transform.root) return;
         }
 
+        DamageType dtype = DamageType.Normal;
+        if (projectileType == ProjectileType.Fire) dtype = DamageType.Fire;
+        else if (projectileType == ProjectileType.Ice) dtype = DamageType.Ice;
+
+        float dmg = baseDamage;
+
         if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
         {
-            damageable.ApplyDamage(baseDamage, owner);
+            damageable.ApplyDamage(new DamageInfo(dmg, dtype, owner));
         }
 
         if (projectileType == ProjectileType.Fire)

@@ -280,7 +280,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
             {
                 if (other.TryGetComponent<IDamageable>(out var dmg))
                 {
-                    dmg.ApplyDamage(lavaDamage * Time.deltaTime, gameObject);
+                    dmg.ApplyDamage(new DamageInfo(lavaDamage* Time.deltaTime, DamageType.Normal, gameObject));
                 }
             }
         }
