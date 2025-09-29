@@ -47,10 +47,7 @@ public class Projectile : MonoBehaviour
     void Update()
     {
         lifeTimer -= Time.deltaTime;
-        if (lifeTimer <= 0f)
-        {
-            Despawn();
-        }
+        if (lifeTimer <= 0f) Despawn();
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -58,29 +55,57 @@ public class Projectile : MonoBehaviour
         if (hitMask.value != 0 && ((1 << other.gameObject.layer) & hitMask.value) == 0)
             return;
 
+        GameObject otherRoot = other.attachedRigidbody ? other.attachedRigidbody.gameObject : other.gameObject;
         if (owner != null)
         {
-            var otherRoot = other.attachedRigidbody ? other.attachedRigidbody.gameObject : other.gameObject;
             if (otherRoot == owner || otherRoot.transform.root == owner.transform.root) return;
         }
 
-        if (other.TryGetComponent<IDamageable>(out var dmg))
+        // 伤害
+        if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
         {
-            dmg.ApplyDamage(baseDamage, owner);
+            damageable.ApplyDamage(baseDamage, owner);
+        }
 
-            if (other.TryGetComponent<Health>(out var health))
+        // 特效
+        if (projectileType == ProjectileType.Fire)
+        {
+            // 对有Health的目标施加DOT
+            if (otherRoot.TryGetComponent<Health>(out var health))
             {
-                if (projectileType == ProjectileType.Fire)
-                {
-                    health.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
-                }
-                else if (projectileType == ProjectileType.Ice)
-                {
-                    health.ApplyFreeze(iceFreezeDuration);
-                }
+                health.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+            }
+
+            // 尝试融化水（兼容子物体Collider/父物体脚本）
+            if (other.TryGetComponent<WaterPlatform>(out var water))
+            {
+                water.TryMeltFromFire();
+            }
+            else
+            {
+                var parentWater = other.GetComponentInParent<WaterPlatform>();
+                if (parentWater != null) parentWater.TryMeltFromFire();
+            }
+        }
+        else if (projectileType == ProjectileType.Ice)
+        {
+            // 冻结：Health 或 IFreezable（水实现了IFreezable）
+            if (otherRoot.TryGetComponent<Health>(out var health))
+            {
+                health.ApplyFreeze(iceFreezeDuration);
+            }
+            else if (other.TryGetComponent<IFreezable>(out var freezable))
+            {
+                freezable.ApplyFreeze(iceFreezeDuration);
+            }
+            else
+            {
+                var parentFreezable = other.GetComponentInParent<IFreezable>();
+                if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
             }
         }
 
+        // 穿透/销毁
         if (remainingPierce > 0)
         {
             remainingPierce--;
