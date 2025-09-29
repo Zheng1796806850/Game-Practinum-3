@@ -17,8 +17,8 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
     public enum ClampBehavior
     {
-        HoldAtMax,        // ÏŞ¸ßÊ±£ºÖ±½ÓÌù×¡Íæ¼Ò½Åµ×
-        OscillateToMax    // ÏŞ¸ßÊ±£º¼ÌĞøÆğ·ü£¬µ«×î¸ß²»³¬¹ıÍæ¼Ò½Åµ×
+        HoldAtMax,        // é™é«˜æ—¶ï¼šç›´æ¥è´´ä½ç©å®¶è„šåº•
+        OscillateToMax    // é™é«˜æ—¶ï¼šç»§ç»­èµ·ä¼ï¼Œä½†æœ€é«˜ä¸è¶…è¿‡ç©å®¶è„šåº•
     }
 
     [Header("Visuals")]
@@ -35,13 +35,13 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     [SerializeField] private float zoneHeight = 0.3f;
     [SerializeField] private float zoneEnterPad = 0.04f;
     [SerializeField] private float zoneExitPad = 0.08f;
-    [SerializeField] private float clampRiseSpeed = 12f;   // ½øÈëÏŞ¸ßÊ±ÏòÉÏ×·½üËÙ¶È
-    [SerializeField] private float clampFallSpeed = 20f;   // Àë¿ªÏŞ¸ßÊ±·Å¿ª»ØÂäËÙ¶È
-    [SerializeField] private float virtualTriggerHeight = 12f; // VirtualTrigger µÄ¼ì²â¸ß¶È£¨¶ÀÁ¢ÓÚ maxHeight£©
+    [SerializeField] private float clampRiseSpeed = 12f;   // è¿›å…¥é™é«˜æ—¶å‘ä¸Šè¿½è¿‘é€Ÿåº¦
+    [SerializeField] private float clampFallSpeed = 20f;   // ç¦»å¼€é™é«˜æ—¶æ”¾å¼€å›è½é€Ÿåº¦
+    [SerializeField] private float virtualTriggerHeight = 12f; // VirtualTrigger çš„æ£€æµ‹é«˜åº¦ï¼ˆç‹¬ç«‹äº maxHeightï¼‰
 
     [Header("General")]
     [SerializeField] private string playerTag = "Player";
-    [SerializeField] private float maxHeight = 4f;          // ×ÔÓÉÆğ·üÊ±µÄ×î¸ß¸ß¶È
+    [SerializeField] private float maxHeight = 4f;          // è‡ªç”±èµ·ä¼æ—¶çš„æœ€é«˜é«˜åº¦
     [SerializeField] private float minHeight = 0.2f;
     [SerializeField] private float oscillationSpeed = 1.5f;
     [SerializeField] private float jitterStrength = 0.15f;
@@ -123,20 +123,20 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
         UpdateClampState();
 
-        // µ±Ç°Êµ¼Ê¸ß¶È£¨ÓÃÓÚÆ½»¬£©
+        // å½“å‰å®é™…é«˜åº¦ï¼ˆç”¨äºå¹³æ»‘ï¼‰
         float curH = (waterRenderer != null) ? waterRenderer.size.y : minHeight;
 
         float targetH;
 
         if (clampActive && playerCol != null)
         {
-            // ÔÊĞíµÄ×î¸ß¸ß¶È = Íæ¼Ò½Åµ×µ½Åç¿ÚµÄ´¹Ö±¾àÀë£¨²»ÔÙÊÜ maxHeight ÏŞÖÆ£©
+            // å…è®¸çš„æœ€é«˜é«˜åº¦ = ç©å®¶è„šåº•åˆ°å–·å£çš„å‚ç›´è·ç¦»ï¼ˆä¸å†å— maxHeight é™åˆ¶ï¼‰
             float footDelta = playerCol.bounds.min.y - transform.position.y;
             float allowedMax = Mathf.Max(minHeight, footDelta);
 
             if (clampBehavior == ClampBehavior.HoldAtMax)
             {
-                // Ö±½Ó°Ñ¸ß¶ÈÍÆµ½Íæ¼Ò½Åµ×£¨´øÆ½»¬£©
+                // ç›´æ¥æŠŠé«˜åº¦æ¨åˆ°ç©å®¶è„šåº•ï¼ˆå¸¦å¹³æ»‘ï¼‰
                 targetH = Mathf.MoveTowards(curH, allowedMax, clampRiseSpeed * Time.deltaTime);
             }
             else // OscillateToMax
@@ -146,20 +146,20 @@ public class WaterPlatform : MonoBehaviour, IFreezable
                 float noise = (Mathf.PerlinNoise(seed, t) - 0.5f) * 2f * jitterStrength;
                 float k = Mathf.Clamp01(osc01 * Mathf.Max(0f, oscillationAmplitudeFactor) + noise * 0.25f);
                 float oscH = Mathf.Lerp(minHeight, allowedMax, k);
-                // ÎªÁË¸üÈİÒ×¡°Ãşµ½¡±½Åµ×£¬ÏòÉÏ×·Ò»µã
+                // ä¸ºäº†æ›´å®¹æ˜“â€œæ‘¸åˆ°â€è„šåº•ï¼Œå‘ä¸Šè¿½ä¸€ç‚¹
                 float lifted = Mathf.MoveTowards(curH, allowedMax, clampRiseSpeed * Time.deltaTime);
                 targetH = Mathf.Max(oscH, lifted);
             }
         }
         else
         {
-            // ·ÇÏŞ¸ß£º³£¹æÆğ·ü£¨ÔÚ minHeight..maxHeight Ö®¼ä£©
+            // éé™é«˜ï¼šå¸¸è§„èµ·ä¼ï¼ˆåœ¨ minHeight..maxHeight ä¹‹é—´ï¼‰
             float t = Time.time * oscillationSpeed;
             float osc01 = 0.5f + 0.5f * Mathf.Sin(t);
             float noise = (Mathf.PerlinNoise(seed, t) - 0.5f) * 2f * jitterStrength;
             float k = Mathf.Clamp01(osc01 * Mathf.Max(0f, oscillationAmplitudeFactor) + noise * 0.25f);
             float freeH = Mathf.Lerp(minHeight, maxHeight, k);
-            // Àë¿ªÏŞ¸ßºó²»ÒªË²¼äµ¯»Ø£¬×ö¸öÏÂÂäÆ½»¬
+            // ç¦»å¼€é™é«˜åä¸è¦ç¬é—´å¼¹å›ï¼Œåšä¸ªä¸‹è½å¹³æ»‘
             targetH = Mathf.MoveTowards(curH, freeH, clampFallSpeed * Time.deltaTime);
         }
 
@@ -176,13 +176,21 @@ public class WaterPlatform : MonoBehaviour, IFreezable
             return;
         }
 
-        // Í³Ò»ÓÃÅö×²ÌåµÄÊÀ½çÖĞĞÄÓë½Åµã
-        float px = playerCol.bounds.center.x;
-        float footY = playerCol.bounds.min.y;
+
+            // Allow the player to drive the water column all the way up to its maximum
+            // height rather than dropping the clamp state as soon as their feet leave
+            // the small trigger zone near the base of the fountain.
+            float coreTop = nozzleY + Mathf.Max(zoneHeight, maxHeight);
+            float enterTop = nozzleY + Mathf.Max(zoneHeight + zoneEnterPad, maxHeight);
+            float exitTop = nozzleY + Mathf.Max(zoneHeight + zoneExitPad, maxHeight);
+
+            bool insideCore = dx <= (zoneHalfWidth + playerHalfW) && footY <= coreTop;
+            bool insideEnter = dx <= (zoneHalfWidth + playerHalfW + zoneEnterPad) && footY <= enterTop;
+            bool insideExit = dx <= (zoneHalfWidth + playerHalfW + zoneExitPad) && footY <= exitTop;
         float nozzleY = transform.position.y;
         float selfX = transform.position.x;
 
-        // ¸øºáÏò·¶Î§¼ÓÉÏÍæ¼Ò°ë¿í£¬±ÜÃâ pivot Æ«ÒÆ´øÀ´µÄÎóÅĞ
+        // ç»™æ¨ªå‘èŒƒå›´åŠ ä¸Šç©å®¶åŠå®½ï¼Œé¿å… pivot åç§»å¸¦æ¥çš„è¯¯åˆ¤
         float playerHalfW = playerCol.bounds.extents.x;
 
         if (clampMode == ClampMode.XRangeOnly)
@@ -207,7 +215,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         if (clampMode == ClampMode.VirtualTrigger)
         {
             float halfW = Mathf.Max(xRangeHalfWidth, currentVisualWidth * 0.5f) + playerHalfW;
-            float h = Mathf.Max(0.01f, virtualTriggerHeight); // ¶ÀÁ¢¸ß¶È£¬²»ÓÃ maxHeight
+            float h = Mathf.Max(0.01f, virtualTriggerHeight); // ç‹¬ç«‹é«˜åº¦ï¼Œä¸ç”¨ maxHeight
             Bounds box = new Bounds(
                 new Vector3(selfX, nozzleY + h * 0.5f, 0f),
                 new Vector3(halfW * 2f, h, 0.1f)
@@ -260,7 +268,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     {
         isFrozen = true;
 
-        // ²»ÔÙ°Ñ¶³½á¸ß¶ÈÉÏÏŞ¼Ğµ½ maxHeight£¬±ÜÃâ±»Ç¿ĞĞÑ¹µÍ
+        // ä¸å†æŠŠå†»ç»“é«˜åº¦ä¸Šé™å¤¹åˆ° maxHeightï¼Œé¿å…è¢«å¼ºè¡Œå‹ä½
         float h = Mathf.Max(minHeight, heightAtFreeze);
 
         ReadVisualWH();
@@ -318,7 +326,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     {
         if (!isFrozen)
         {
-            // ¶³½áÊ±È¡¡°µ±Ç°Ó¦ÓĞµÄ¸ß¶È¡±£¬±£Ö¤±ùÖùÓë´Ë¿ÌË®ÖùÎŞ·ìÏÎ½Ó
+            // å†»ç»“æ—¶å–â€œå½“å‰åº”æœ‰çš„é«˜åº¦â€ï¼Œä¿è¯å†°æŸ±ä¸æ­¤åˆ»æ°´æŸ±æ— ç¼è¡”æ¥
             float curH = (waterRenderer != null) ? waterRenderer.size.y : minHeight;
             Freeze(duration, curH);
         }
