@@ -187,7 +187,7 @@ MonoBehaviour:
   waterRenderer: {fileID: 3273160666925011253}
   iceVisualRoot: {fileID: 8969653777601919765}
   iceRenderer: {fileID: 8874475198809262506}
-  fountainType: 0
+  fountainType: 1
   maxHeight: 6
   minHeight: 0.2
   riseDuration: 0.75

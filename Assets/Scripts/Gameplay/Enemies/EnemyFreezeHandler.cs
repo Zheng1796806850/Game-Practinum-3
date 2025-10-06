@@ -6,6 +6,7 @@ public class EnemyFreezeHandler : MonoBehaviour
     public Rigidbody2D rb;
     public EnemyCombatController combat;
     public float massMultiplier = 5f;
+    [SerializeField] private GameObject iceVisual;
 
     private Health health;
     private float baseMass;
@@ -19,6 +20,7 @@ public class EnemyFreezeHandler : MonoBehaviour
         baseMass = rb != null ? rb.mass : 1f;
         if (combat != null) cachedUseTouchDamage = combat.useTouchDamage;
         health.OnFreezeStateChanged += OnFreezeChanged;
+        if (iceVisual != null) iceVisual.SetActive(false);
     }
 
     void OnDestroy()
@@ -41,5 +43,6 @@ public class EnemyFreezeHandler : MonoBehaviour
                 combat.useTouchDamage = cachedUseTouchDamage;
             }
         }
+        if (iceVisual != null) iceVisual.SetActive(frozen);
     }
 }

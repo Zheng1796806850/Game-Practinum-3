@@ -45,7 +45,6 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
 #if UNITY_EDITOR
     [Header("Gizmos")]
-    [SerializeField] private bool gizmosShowRealtimePoint = true;
     [SerializeField] private float gizmosPreviewScaleX = 0.0f;
 #endif
 
@@ -53,12 +52,8 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     private float freezeTimer;
     private float currentVisualWidth;
     private float currentVisualHeight;
-
     private float cycleTimer;
     private enum CycleState { Rising, PauseTop, Falling, PauseBottom }
-    private CycleState cycleState = CycleState.Rising;
-
-    private Collider2D playerCol;
 
     void Awake()
     {
@@ -84,9 +79,22 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
+    }
 
-        cycleTimer = 0f;
-        cycleState = CycleState.Rising;
+    void OnEnable()
+    {
+        if (hitTrigger != null)
+        {
+            var proxy = hitTrigger.GetComponent<TriggerProxy>();
+            if (proxy == null) proxy = hitTrigger.gameObject.AddComponent<TriggerProxy>();
+            proxy.OnStay += OnChildTriggerStay;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (hitTrigger != null && hitTrigger.TryGetComponent(out TriggerProxy proxy))
+            proxy.OnStay -= OnChildTriggerStay;
     }
 
     void Start()
@@ -94,7 +102,6 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         if (!string.IsNullOrEmpty(playerTag))
         {
             var go = GameObject.FindGameObjectWithTag(playerTag);
-            if (go != null) playerCol = go.GetComponent<Collider2D>();
         }
     }
 
@@ -111,7 +118,6 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         }
 
         UpdateFountainMotion();
-
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
     }
@@ -198,11 +204,10 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     private void Freeze(float duration, float heightAtFreeze)
     {
         isFrozen = true;
-
         float h = Mathf.Max(minHeight, heightAtFreeze);
-
         ReadVisualWH();
         float w = currentVisualWidth;
+
         SetWaterActive(false);
         SetIceActive(true);
 
@@ -272,7 +277,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         else if (meltWhenHitByFireInTimedMode) Unfreeze();
     }
 
-    void OnTriggerStay2D(Collider2D other)
+    private void OnChildTriggerStay(Collider2D other)
     {
         if (fountainType == FountainType.Lava && !isFrozen)
         {
@@ -280,7 +285,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
             {
                 if (other.TryGetComponent<IDamageable>(out var dmg))
                 {
-                    dmg.ApplyDamage(new DamageInfo(lavaDamage* Time.deltaTime, DamageType.Normal, gameObject));
+                    dmg.ApplyDamage(new DamageInfo(lavaDamage * Time.deltaTime, DamageType.Normal, gameObject));
                 }
             }
         }
@@ -322,20 +327,15 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         a = basePos + Vector3.up * (maxHeight * sY) + Vector3.left * 0.5f;
         b = basePos + Vector3.up * (maxHeight * sY) + Vector3.right * 0.5f;
         Gizmos.DrawLine(a, b);
-
-        if (gizmosShowRealtimePoint)
-        {
-            float liveH = 0f;
-            if (waterRenderer != null)
-            {
-                liveH = waterRenderer.size.y * sY;
-            }
-            Vector3 p = basePos + Vector3.up * liveH;
-#if UNITY_EDITOR
-            UnityEditor.Handles.color = Color.white;
-            UnityEditor.Handles.DrawSolidDisc(p, Vector3.forward, 0.05f);
-#endif
-        }
     }
 #endif
+}
+
+public class TriggerProxy : MonoBehaviour
+{
+    public System.Action<Collider2D> OnStay;
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        OnStay?.Invoke(other);
+    }
 }

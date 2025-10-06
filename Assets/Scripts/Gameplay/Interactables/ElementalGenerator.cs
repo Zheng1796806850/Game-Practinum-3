@@ -1,13 +1,14 @@
 using UnityEngine;
 
-public class BulletSwitch : MonoBehaviour
+public class ElementalGenerator : MonoBehaviour
 {
-    [SerializeField] private string activateTag = "Fire";
-    [SerializeField] private string deactivateTag = "Ice";
+    public enum RequiredElement { Fire, Ice }
+    [SerializeField] private RequiredElement required = RequiredElement.Ice;
+    [SerializeField] private bool toggleable = false;
+    [SerializeField] private bool allowDeactivateByOpposite = false;
     [SerializeField] private SpriteRenderer indicator;
     [SerializeField] private Color inactiveColor = Color.gray;
-    [SerializeField] private Color activeColor = Color.green;
-    [SerializeField] private bool toggleable = false;
+    [SerializeField] private Color activeColor = Color.cyan;
     [SerializeField] private float retriggerCooldown = 0.05f;
 
     public bool IsActivated { get; private set; }
@@ -22,16 +23,20 @@ public class BulletSwitch : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.TryGetComponent<Projectile>(out _)) return;
+        if (!other.TryGetComponent<Projectile>(out var proj)) return;
         if (Time.frameCount == lastToggleFrame) return;
         if (Time.time - lastToggleTime < retriggerCooldown) return;
 
-        bool matchedActivate = !string.IsNullOrEmpty(activateTag) && other.CompareTag(activateTag);
-        bool matchedDeactivate = !string.IsNullOrEmpty(deactivateTag) && other.CompareTag(deactivateTag);
+        bool match = (required == RequiredElement.Fire && proj.projectileType == Projectile.ProjectileType.Fire) ||
+                     (required == RequiredElement.Ice && proj.projectileType == Projectile.ProjectileType.Ice);
 
         if (toggleable)
         {
-            if (matchedActivate || matchedDeactivate)
+            if (match)
+            {
+                IsActivated = !IsActivated;
+            }
+            else if (allowDeactivateByOpposite && IsOpposite(proj))
             {
                 IsActivated = !IsActivated;
             }
@@ -42,12 +47,12 @@ public class BulletSwitch : MonoBehaviour
         }
         else
         {
-            if (matchedActivate)
+            if (match)
             {
                 if (IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
                 IsActivated = true;
             }
-            else if (matchedDeactivate)
+            else if (allowDeactivateByOpposite && IsOpposite(proj))
             {
                 if (!IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
                 IsActivated = false;
@@ -61,6 +66,12 @@ public class BulletSwitch : MonoBehaviour
         lastToggleFrame = Time.frameCount;
         lastToggleTime = Time.time;
         RefreshColor();
+    }
+
+    private bool IsOpposite(Projectile proj)
+    {
+        if (required == RequiredElement.Fire) return proj.projectileType == Projectile.ProjectileType.Ice;
+        return proj.projectileType == Projectile.ProjectileType.Fire;
     }
 
     private void RefreshColor()

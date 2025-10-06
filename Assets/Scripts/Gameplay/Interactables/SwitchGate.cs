@@ -4,6 +4,7 @@ public class SwitchGate : MonoBehaviour
 {
     [SerializeField] private BulletSwitch[] bulletSwitches;
     [SerializeField] private PressurePlateSwitch[] pressurePlates;
+    [SerializeField] private ElementalGenerator[] elementalGenerators;
     [SerializeField] private DoorLinearOpener door;
     [SerializeField] private bool autoClose = true;
 
@@ -32,6 +33,18 @@ public class SwitchGate : MonoBehaviour
             for (int i = 0; i < pressurePlates.Length; i++)
             {
                 if (pressurePlates[i] == null || !pressurePlates[i].IsActivated)
+                {
+                    allActive = false;
+                    break;
+                }
+            }
+        }
+
+        if (allActive && elementalGenerators != null && elementalGenerators.Length > 0)
+        {
+            for (int i = 0; i < elementalGenerators.Length; i++)
+            {
+                if (elementalGenerators[i] == null || !elementalGenerators[i].IsActivated)
                 {
                     allActive = false;
                     break;
