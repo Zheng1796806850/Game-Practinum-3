@@ -10,14 +10,32 @@ public class BulletSwitch : MonoBehaviour
     [SerializeField] private bool toggleable = false;
     [SerializeField] private float retriggerCooldown = 0.05f;
 
+    [Header("Auto Deactivate")]
+    [SerializeField] private bool autoDeactivateAfterCountdown = false;
+    [SerializeField] private float deactivateDelay = 3f;
+
     public bool IsActivated { get; private set; }
 
     private int lastToggleFrame = -1;
     private float lastToggleTime = -999f;
+    private float deactivateTimer = -1f;
 
     void Awake()
     {
         RefreshColor();
+    }
+
+    void Update()
+    {
+        if (autoDeactivateAfterCountdown && IsActivated && deactivateTimer > 0f)
+        {
+            deactivateTimer -= Time.deltaTime;
+            if (deactivateTimer <= 0f)
+            {
+                IsActivated = false;
+                RefreshColor();
+            }
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -46,11 +64,15 @@ public class BulletSwitch : MonoBehaviour
             {
                 if (IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
                 IsActivated = true;
+
+                if (autoDeactivateAfterCountdown)
+                    deactivateTimer = deactivateDelay;
             }
             else if (matchedDeactivate)
             {
                 if (!IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
                 IsActivated = false;
+                deactivateTimer = -1f;
             }
             else
             {

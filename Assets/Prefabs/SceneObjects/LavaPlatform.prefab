@@ -189,11 +189,11 @@ MonoBehaviour:
   iceRenderer: {fileID: 8874475198809262506}
   fountainType: 1
   maxHeight: 6
-  minHeight: 0.2
-  riseDuration: 0.75
-  fallDuration: 0.9
-  pauseAtTop: 1
-  pauseAtBottom: 0.25
+  minHeight: 2
+  riseDuration: 1
+  fallDuration: 1
+  pauseAtTop: 0.1
+  pauseAtBottom: 0.1
   startWidth: 0.5
   unfreezeMode: 0
   defaultFreezeDuration: 3
@@ -202,7 +202,6 @@ MonoBehaviour:
   playerTag: Player
   hitTrigger: {fileID: 6296836789913819608}
   iceCollider: {fileID: 7498439120437761903}
-  gizmosShowRealtimePoint: 1
   gizmosPreviewScaleX: 0
 --- !u!61 &8508049898404791811
 BoxCollider2D:

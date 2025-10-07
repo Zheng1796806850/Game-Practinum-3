@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerHealth : MonoBehaviour
 {
     private Health health;
+    public DeathMenuManager deathMenu;
 
     void Awake()
     {
@@ -20,5 +21,6 @@ public class PlayerHealth : MonoBehaviour
     private void OnDied(GameObject killer)
     {
         Debug.Log("Player Died");
+        if (deathMenu != null) deathMenu.ShowDeathPanel();
     }
 }

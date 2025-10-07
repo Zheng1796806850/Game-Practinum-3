@@ -31,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.64, y: -0.75, z: 0}
-  m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -226,6 +226,8 @@ MonoBehaviour:
   deactivateTag: FireBullet
   indicator: {fileID: 3608050528785798650}
   inactiveColor: {r: 0.011764707, g: 0.011764707, b: 0.9803922, a: 1}
-  activeColor: {r: 1, g: 1, b: 1, a: 1}
+  activeColor: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
   toggleable: 0
   retriggerCooldown: 0.05
+  autoDeactivateAfterCountdown: 1
+  deactivateDelay: 10
