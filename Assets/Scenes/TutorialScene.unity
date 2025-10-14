@@ -3265,7 +3265,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2122525413}
+    m_TransformParent: {fileID: 1670642506}
     m_Modifications:
     - target: {fileID: 1224532758386633717, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
       propertyPath: m_IsTrigger
@@ -9886,6 +9886,10 @@ PrefabInstance:
       value: Element Switch_GateController
       objectReference: {fileID: 0}
     - target: {fileID: 7195073235823298470, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
+      propertyPath: door
+      value: 
+      objectReference: {fileID: 1262261939}
+    - target: {fileID: 7195073235823298470, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
       propertyPath: elementalGenerators.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -9939,7 +9943,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7530671522713316032, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874636214}
+    - targetCorrespondingSourceObject: {fileID: 7530671522713316032, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2091982338}
+    - targetCorrespondingSourceObject: {fileID: 7530671522713316032, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 908682420}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a7f3eb5328768f247adf7f3be4a3e065, type: 3}
 --- !u!1 &892333279
@@ -13707,7 +13720,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2122525413}
+    m_TransformParent: {fileID: 1670642506}
     m_Modifications:
     - target: {fileID: 747570514339578374, guid: 5450cc06021065549a12921d65554586, type: 3}
       propertyPath: m_Name
@@ -13747,15 +13760,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4320173630559485817, guid: 5450cc06021065549a12921d65554586, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4320173630559485817, guid: 5450cc06021065549a12921d65554586, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4320173630559485817, guid: 5450cc06021065549a12921d65554586, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4320173630559485817, guid: 5450cc06021065549a12921d65554586, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -13774,6 +13787,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5450cc06021065549a12921d65554586, type: 3}
+--- !u!114 &1262261939 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3087696033688252837, guid: 5450cc06021065549a12921d65554586, type: 3}
+  m_PrefabInstance: {fileID: 1262261938}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3172091b574618429810e84f49179d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1272420046
 GameObject:
   m_ObjectHideFlags: 0
@@ -19212,7 +19236,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2122525413}
+    m_TransformParent: {fileID: 1670642506}
     m_Modifications:
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: accept
@@ -23657,9 +23681,6 @@ Transform:
   - {fileID: 1200932732}
   - {fileID: 2072531175}
   - {fileID: 1670642506}
-  - {fileID: 1874636214}
-  - {fileID: 2091982338}
-  - {fileID: 908682420}
   - {fileID: 458982974}
   - {fileID: 440719372}
   m_Father: {fileID: 459724845}
