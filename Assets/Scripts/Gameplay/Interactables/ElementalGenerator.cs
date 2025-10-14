@@ -1,114 +1,124 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ElementalGenerator : MonoBehaviour
 {
-    public enum RequiredElement { Fire, Ice }
+    public enum AcceptType { FireOnly, IceOnly, Any }
 
-    [SerializeField] private RequiredElement required = RequiredElement.Ice;
-    [SerializeField] private bool toggleable = false;
-    [SerializeField] private bool allowDeactivateByOpposite = false;
-    [SerializeField] private SpriteRenderer indicator;
-    [SerializeField] private Color inactiveColor = Color.gray;
-    [SerializeField] private Color activeColor = Color.cyan;
+    [Header("Accept")]
+    [SerializeField] private AcceptType accept = AcceptType.IceOnly;
+
+    [Header("Charge (%)")]
+    [Range(0f, 100f)][SerializeField] private float activationPercent = 100f;
+    [Range(0f, 100f)][SerializeField] private float deactivationPercent = 80f;
+    [Range(0f, 100f)][SerializeField] private float decayPerSecondPercent = 5f;
+    [Range(0f, 100f)][SerializeField] private float perHitChargePercent = 25f;
+
+    [Header("Hit Cooldown")]
     [SerializeField] private float retriggerCooldown = 0.05f;
 
-    [Header("Auto Deactivate")]
-    [SerializeField] private bool autoDeactivateAfterCountdown = false;
-    [SerializeField] private float deactivateDelay = 3f;
+    [Header("UI")]
+    [SerializeField] private Slider generatorBar;
+    [SerializeField] private Slider[] lineSliders;
 
     public bool IsActivated { get; private set; }
+    public float ChargePercent { get; private set; }
 
-    private int lastToggleFrame = -1;
-    private float lastToggleTime = -999f;
-    private float deactivateTimer = -1f;
+    private int lastHitFrame = -1;
+    private float lastHitTime = -999f;
 
     void Awake()
     {
-        RefreshColor();
+        if (generatorBar != null) { generatorBar.maxValue = 1f; generatorBar.value = 0f; }
+        if (lineSliders != null)
+        {
+            for (int i = 0; i < lineSliders.Length; i++)
+            {
+                if (lineSliders[i] != null) { lineSliders[i].maxValue = 1f; lineSliders[i].value = 0f; }
+            }
+        }
+        ChargePercent = 0f;
+        IsActivated = false;
+        ClampThresholds();
+        RefreshUI();
     }
 
     void Update()
     {
-        if (autoDeactivateAfterCountdown && IsActivated && deactivateTimer > 0f)
+        if (ChargePercent > 0f && decayPerSecondPercent > 0f)
         {
-            deactivateTimer -= Time.deltaTime;
-            if (deactivateTimer <= 0f)
-            {
-                IsActivated = false;
-                RefreshColor();
-            }
+            ChargePercent = Mathf.Max(0f, ChargePercent - decayPerSecondPercent * Time.deltaTime);
+            EvaluateActivation();
+            RefreshUI();
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.TryGetComponent<Projectile>(out var proj)) return;
-        if (Time.frameCount == lastToggleFrame) return;
-        if (Time.time - lastToggleTime < retriggerCooldown) return;
+        if (Time.frameCount == lastHitFrame) return;
+        if (Time.time - lastHitTime < retriggerCooldown) return;
+        if (!Accepts(proj)) return;
 
-        bool match = (required == RequiredElement.Fire && proj.projectileType == Projectile.ProjectileType.Fire) ||
-                     (required == RequiredElement.Ice && proj.projectileType == Projectile.ProjectileType.Ice);
+        ChargePercent = Mathf.Min(100f, ChargePercent + perHitChargePercent);
+        EvaluateActivation();
+        RefreshUI();
 
-        if (toggleable)
+        lastHitFrame = Time.frameCount;
+        lastHitTime = Time.time;
+    }
+
+    private bool Accepts(Projectile proj)
+    {
+        if (accept == AcceptType.Any) return true;
+        if (accept == AcceptType.FireOnly) return proj.projectileType == Projectile.ProjectileType.Fire;
+        return proj.projectileType == Projectile.ProjectileType.Ice;
+    }
+
+    private void EvaluateActivation()
+    {
+        if (IsActivated)
         {
-            if (match)
-            {
-                IsActivated = !IsActivated;
-                if (IsActivated && autoDeactivateAfterCountdown)
-                    deactivateTimer = deactivateDelay;
-                else if (!IsActivated)
-                    deactivateTimer = -1f;
-            }
-            else if (allowDeactivateByOpposite && IsOpposite(proj))
-            {
-                IsActivated = !IsActivated;
-                if (IsActivated && autoDeactivateAfterCountdown)
-                    deactivateTimer = deactivateDelay;
-                else if (!IsActivated)
-                    deactivateTimer = -1f;
-            }
-            else
-            {
-                return;
-            }
+            if (ChargePercent < deactivationPercent) IsActivated = false;
         }
         else
         {
-            if (match)
-            {
-                if (IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
-                IsActivated = true;
+            if (ChargePercent >= activationPercent) IsActivated = true;
+        }
+    }
 
-                if (autoDeactivateAfterCountdown)
-                    deactivateTimer = deactivateDelay;
-            }
-            else if (allowDeactivateByOpposite && IsOpposite(proj))
+    private void RefreshUI()
+    {
+        float t = Mathf.Clamp01(ChargePercent / 100f);
+
+        if (generatorBar != null)
+            generatorBar.value = t;
+
+        if (lineSliders != null && lineSliders.Length > 0)
+        {
+            int n = lineSliders.Length;
+            float scaled = t * n;
+            for (int i = 0; i < n; i++)
             {
-                if (!IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
-                IsActivated = false;
-                deactivateTimer = -1f;
-            }
-            else
-            {
-                return;
+                var s = lineSliders[i];
+                if (s == null) continue;
+                float local = Mathf.Clamp01(scaled - i);
+                s.value = local;
             }
         }
-
-        lastToggleFrame = Time.frameCount;
-        lastToggleTime = Time.time;
-        RefreshColor();
     }
 
-    private bool IsOpposite(Projectile proj)
+    private void OnValidate()
     {
-        if (required == RequiredElement.Fire)
-            return proj.projectileType == Projectile.ProjectileType.Ice;
-        return proj.projectileType == Projectile.ProjectileType.Fire;
+        ClampThresholds();
+        RefreshUI();
     }
 
-    private void RefreshColor()
+    private void ClampThresholds()
     {
-        if (indicator != null)
-            indicator.color = IsActivated ? activeColor : inactiveColor;
+        activationPercent = Mathf.Clamp(activationPercent, 0f, 100f);
+        deactivationPercent = Mathf.Clamp(deactivationPercent, 0f, activationPercent);
+        perHitChargePercent = Mathf.Clamp(perHitChargePercent, 0f, 100f);
+        decayPerSecondPercent = Mathf.Max(0f, decayPerSecondPercent);
     }
 }

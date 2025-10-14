@@ -29,6 +29,7 @@ public class WaterPlatform : MonoBehaviour, IFreezable
     [SerializeField] private float pauseAtTop = 0.5f;
     [SerializeField] private float pauseAtBottom = 0.5f;
     [SerializeField] private float startWidth = 0.5f;
+    [SerializeField] private bool requireActivation = false;
 
     [Header("Unfreeze Rule")]
     [SerializeField] private UnfreezeMode unfreezeMode = UnfreezeMode.TimedByBullet;
@@ -49,11 +50,12 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 #endif
 
     private bool isFrozen;
+    private bool isActive;
+    private bool isDeactivating;
     private float freezeTimer;
     private float currentVisualWidth;
     private float currentVisualHeight;
     private float cycleTimer;
-    private enum CycleState { Rising, PauseTop, Falling, PauseBottom }
 
     void Awake()
     {
@@ -79,6 +81,9 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
+
+        isActive = !requireActivation;
+        isDeactivating = false;
     }
 
     void OnEnable()
@@ -97,16 +102,10 @@ public class WaterPlatform : MonoBehaviour, IFreezable
             proxy.OnStay -= OnChildTriggerStay;
     }
 
-    void Start()
-    {
-        if (!string.IsNullOrEmpty(playerTag))
-        {
-            var go = GameObject.FindGameObjectWithTag(playerTag);
-        }
-    }
-
     void Update()
     {
+        if (!isActive && !isDeactivating) return;
+
         if (isFrozen)
         {
             if (unfreezeMode == UnfreezeMode.TimedByBullet && freezeTimer > 0f)
@@ -120,6 +119,15 @@ public class WaterPlatform : MonoBehaviour, IFreezable
         UpdateFountainMotion();
         ReadVisualWH();
         SyncTriggerTo(currentVisualWidth, currentVisualHeight);
+
+        if (isDeactivating)
+        {
+            if (currentVisualHeight <= minHeight + 0.05f)
+            {
+                isDeactivating = false;
+                isActive = false;
+            }
+        }
     }
 
     private void UpdateFountainMotion()
@@ -279,6 +287,8 @@ public class WaterPlatform : MonoBehaviour, IFreezable
 
     private void OnChildTriggerStay(Collider2D other)
     {
+        if (!isActive) return;
+
         if (fountainType == FountainType.Lava && !isFrozen)
         {
             if (other.CompareTag(playerTag))
@@ -288,6 +298,20 @@ public class WaterPlatform : MonoBehaviour, IFreezable
                     dmg.ApplyDamage(new DamageInfo(lavaDamage * Time.deltaTime, DamageType.Normal, gameObject));
                 }
             }
+        }
+    }
+
+    public void Activate()
+    {
+        isActive = true;
+        isDeactivating = false;
+    }
+
+    public void Deactivate()
+    {
+        if (isActive)
+        {
+            isDeactivating = true;
         }
     }
 

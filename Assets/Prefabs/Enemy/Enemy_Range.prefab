@@ -552,7 +552,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.95, y: 1.82, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6944270487770486632}
@@ -680,8 +680,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1, y: 2}
+  m_Offset: {x: -0.0036825454, y: 0}
+  m_Size: {x: 1.4492717, y: 2}
   m_Direction: 0
 --- !u!114 &8047163938570196849
 MonoBehaviour:
@@ -716,6 +716,7 @@ MonoBehaviour:
   bulletSpeed: 3
   damage: 1
   owner: {fileID: 4780395053181748729}
+  fireCooldown: 0.2
 --- !u!114 &1478296297846493080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -728,15 +729,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f98e57bfdfe974699d3d8e492a8c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1
+  moveSpeed: 1.5
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
+  wallCheckDistance: 0.3
   groundMask:
     serializedVersion: 2
     m_Bits: 64
   player: {fileID: 0}
   playerTag: Player
-  detectLeft: 7
+  detectLeft: 3.5
   detectRight: 7
   detectUp: 3
   detectDown: 1
@@ -759,7 +761,7 @@ MonoBehaviour:
   useRanged: 1
   manualFireOnly: 0
   useRectDetection: 1
-  detectLeft: 7
+  detectLeft: 3.5
   detectRight: 7
   detectUp: 3
   detectDown: 1

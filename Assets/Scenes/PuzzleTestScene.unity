@@ -4486,6 +4486,12 @@ MonoBehaviour:
   icon: {fileID: 771855267}
   fireSprite: {fileID: 8088698041416398886, guid: 321b948e47fff514ab8a6ecf9f8c6659, type: 3}
   iceSprite: {fileID: 6962285437187252840, guid: cf9a789166b6b98488895178b762d286, type: 3}
+  fireBar: {fileID: 0}
+  iceDotImages: []
+  iceFullSprite: {fileID: 0}
+  iceEmptySprite: {fileID: 0}
+  iceFullColor: {r: 1, g: 1, b: 1, a: 1}
+  iceEmptyColor: {r: 1, g: 1, b: 1, a: 0.25}
 --- !u!114 &1031859176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7993,26 +7999,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 145048989}
     m_Modifications:
-    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
-      propertyPath: activeColor.b
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
-      propertyPath: activeColor.g
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
-      propertyPath: activeColor.r
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
-      propertyPath: deactivateDelay
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
-      propertyPath: autoDeactivateAfterCountdown
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5325665828179322703, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: m_Name
       value: Fire Generator
@@ -8196,26 +8182,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 145048989}
     m_Modifications:
-    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
-      propertyPath: activeColor.b
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
-      propertyPath: activeColor.g
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
-      propertyPath: activeColor.r
-      value: 0.5294118
-      objectReference: {fileID: 0}
-    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
-      propertyPath: deactivateDelay
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
-      propertyPath: autoDeactivateAfterCountdown
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2171213026188534807, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
       propertyPath: m_Name
       value: Ice Generator

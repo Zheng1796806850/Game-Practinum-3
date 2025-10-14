@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5265975327535436574}
   - component: {fileID: 7682994546009464845}
-  - component: {fileID: 4275248242256117687}
   - component: {fileID: 1698249007541540494}
+  - component: {fileID: 1224532758386633717}
   m_Layer: 7
   m_Name: Ice Generator
   m_TagString: Untagged
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: -2413806693520163455, guid: ebe73ca9363db456bacf42c025bb4847, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -89,8 +89,29 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &4275248242256117687
-BoxCollider2D:
+--- !u!114 &1698249007541540494
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2171213026188534807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2abdbe8eaed7804c8a32cf1533c3f6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  required: 1
+  toggleable: 0
+  allowDeactivateByOpposite: 0
+  indicator: {fileID: 7682994546009464845}
+  inactiveColor: {r: 0, g: 0.63529414, b: 0.9058824, a: 1}
+  activeColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 1}
+  retriggerCooldown: 0.05
+  autoDeactivateAfterCountdown: 1
+  deactivateDelay: 0.5
+--- !u!58 &1224532758386633717
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -124,33 +145,4 @@ BoxCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
-  m_EdgeRadius: 0
---- !u!114 &1698249007541540494
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2171213026188534807}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e2abdbe8eaed7804c8a32cf1533c3f6e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  required: 1
-  toggleable: 0
-  allowDeactivateByOpposite: 0
-  indicator: {fileID: 7682994546009464845}
-  inactiveColor: {r: 0, g: 0.63529414, b: 0.9058824, a: 1}
-  activeColor: {r: 0, g: 0.9960785, b: 0, a: 1}
-  retriggerCooldown: 0.05
+  m_Radius: 0.5

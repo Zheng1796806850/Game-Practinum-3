@@ -5,15 +5,20 @@ public class SwitchGate : MonoBehaviour
     [SerializeField] private BulletSwitch[] bulletSwitches;
     [SerializeField] private PressurePlateSwitch[] pressurePlates;
     [SerializeField] private ElementalGenerator[] elementalGenerators;
+
+    [Header("Controlled Objects")]
+    [SerializeField] private bool controlDoor = true;
     [SerializeField] private DoorLinearOpener door;
+    [SerializeField] private bool controlFountain = false;
+    [SerializeField] private WaterPlatform[] fountains;
+
+    [Header("Behavior")]
     [SerializeField] private bool autoClose = true;
 
     private bool lastAllActive = false;
 
     void Update()
     {
-        if (door == null) return;
-
         bool allActive = true;
 
         if (bulletSwitches != null && bulletSwitches.Length > 0)
@@ -54,8 +59,29 @@ public class SwitchGate : MonoBehaviour
 
         if (allActive != lastAllActive)
         {
-            if (allActive) door.Open();
-            else if (autoClose) door.Close();
+            if (allActive)
+            {
+                if (controlDoor && door != null) door.Open();
+                if (controlFountain && fountains != null)
+                {
+                    foreach (var f in fountains)
+                    {
+                        if (f != null) f.Activate();
+                    }
+                }
+            }
+            else if (autoClose)
+            {
+                if (controlDoor && door != null) door.Close();
+                if (controlFountain && fountains != null)
+                {
+                    foreach (var f in fountains)
+                    {
+                        if (f != null) f.Deactivate();
+                    }
+                }
+            }
+
             lastAllActive = allActive;
         }
     }

@@ -8,6 +8,7 @@ public class EnemyPatrol : MonoBehaviour
     public float moveSpeed = 2f;
     public Transform groundCheck;
     public float groundCheckDistance = 0.25f;
+    public float wallCheckDistance = 0.3f;
     public LayerMask groundMask;
 
     public Transform player;
@@ -54,7 +55,7 @@ public class EnemyPatrol : MonoBehaviour
     {
         if (health != null && health.IsFrozen)
         {
-            rb.linearVelocity = Vector2.zero;
+            //rb.linearVelocity = Vector2.zero;
             return;
         }
 
@@ -80,7 +81,6 @@ public class EnemyPatrol : MonoBehaviour
         {
             Patrol();
         }
-
     }
 
     private void Patrol()
@@ -110,11 +110,23 @@ public class EnemyPatrol : MonoBehaviour
 
         if ((dir > 0f && !facingRight) || (dir < 0f && facingRight)) Flip();
     }
+
     private bool CanMoveForward()
     {
-        if (groundCheck == null) return true;
-        RaycastHit2D hit = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundMask);
-        return hit.collider != null;
+        bool hasGround = true;
+        bool hasWall = false;
+
+        if (groundCheck != null)
+        {
+            RaycastHit2D groundHit = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundMask);
+            hasGround = groundHit.collider != null;
+        }
+
+        Vector2 dir = facingRight ? Vector2.right : Vector2.left;
+        RaycastHit2D wallHit = Physics2D.Raycast(transform.position, dir, wallCheckDistance, groundMask);
+        hasWall = wallHit.collider != null;
+
+        return hasGround && !hasWall;
     }
 
     private bool IsPlayerInDetectionZone()
@@ -151,7 +163,15 @@ public class EnemyPatrol : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.contacts.Length > 0 && Mathf.Abs(collision.contacts[0].normal.x) > 0.5f) Flip();
+        for (int i = 0; i < collision.contactCount; i++)
+        {
+            var normal = collision.GetContact(i).normal;
+            if (Mathf.Abs(normal.x) > 0.5f)
+            {
+                Flip();
+                break;
+            }
+        }
     }
 
     private void OnDeath(GameObject killer)
@@ -167,15 +187,16 @@ public class EnemyPatrol : MonoBehaviour
             Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * groundCheckDistance);
         }
 
-        Gizmos.color = Color.red;
+        Gizmos.color = Color.cyan;
+        Vector3 wallDir = (facingRight ? Vector3.right : Vector3.left) * wallCheckDistance;
+        Gizmos.DrawLine(transform.position, transform.position + wallDir);
 
+        Gizmos.color = Color.red;
         Vector3 localCenter = new Vector3((detectRight - detectLeft) * 0.5f, (detectUp - detectDown) * 0.5f, 0f);
         Vector3 localSize = new Vector3(detectLeft + detectRight, detectUp + detectDown, 0.1f);
-
         Matrix4x4 oldMatrix = Gizmos.matrix;
         Gizmos.matrix = transform.localToWorldMatrix;
         Gizmos.DrawWireCube(localCenter, localSize);
         Gizmos.matrix = oldMatrix;
     }
-
 }

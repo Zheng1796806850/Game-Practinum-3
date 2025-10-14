@@ -2,6 +2,16 @@ using UnityEngine;
 
 public class DoorLinearOpener : MonoBehaviour
 {
+    public enum OpenDirection
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
+    [Header("Movement Settings")]
+    [SerializeField] private OpenDirection openDirection = OpenDirection.Up;
     [SerializeField] private float openDistance = 4f;
     [SerializeField] private float openSpeed = 3f;
     [SerializeField] private float closeSpeed = 3f;
@@ -14,7 +24,7 @@ public class DoorLinearOpener : MonoBehaviour
     void Awake()
     {
         startPos = transform.position;
-        targetPos = startPos + Vector3.up * openDistance;
+        targetPos = startPos + GetDirectionVector() * openDistance;
     }
 
     void Update()
@@ -37,5 +47,17 @@ public class DoorLinearOpener : MonoBehaviour
     public void SetOpen(bool open)
     {
         IsOpen = open;
+    }
+
+    private Vector3 GetDirectionVector()
+    {
+        switch (openDirection)
+        {
+            case OpenDirection.Up: return Vector3.up;
+            case OpenDirection.Down: return Vector3.down;
+            case OpenDirection.Left: return Vector3.left;
+            case OpenDirection.Right: return Vector3.right;
+            default: return Vector3.up;
+        }
     }
 }
