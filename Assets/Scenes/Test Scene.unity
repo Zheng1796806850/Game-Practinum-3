@@ -6346,22 +6346,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 237881959373765335, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: m_Size.x
-      value: 1.81
-      objectReference: {fileID: 0}
-    - target: {fileID: 237881959373765335, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: m_Size.y
-      value: 1.96
-      objectReference: {fileID: 0}
-    - target: {fileID: 237881959373765335, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 17426746270384133, guid: bd74b03497bd1b548a75651d588c1ec0, type: 3}
-    - target: {fileID: 237881959373765335, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 1682504816549230642, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: bulletUI
       value: 
@@ -6421,10 +6405,6 @@ PrefabInstance:
     - target: {fileID: 4674403223554948003, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658930660087295488, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: maxHP
-      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6179979184917067807, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_Name
