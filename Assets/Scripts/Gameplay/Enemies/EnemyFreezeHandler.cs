@@ -11,6 +11,7 @@ public class EnemyFreezeHandler : MonoBehaviour
     private Health health;
     private float baseMass;
     private bool cachedUseTouchDamage;
+    private bool subscribed;
 
     void Awake()
     {
@@ -19,18 +20,26 @@ public class EnemyFreezeHandler : MonoBehaviour
         if (combat == null) combat = GetComponent<EnemyCombatController>();
         baseMass = rb != null ? rb.mass : 1f;
         if (combat != null) cachedUseTouchDamage = combat.useTouchDamage;
+
         health.OnFreezeStateChanged += OnFreezeChanged;
+        subscribed = true;
+
         if (iceVisual != null) iceVisual.SetActive(false);
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
-        if (health != null) health.OnFreezeStateChanged -= OnFreezeChanged;
+        if (health != null && subscribed)
+        {
+            health.OnFreezeStateChanged -= OnFreezeChanged;
+            subscribed = false;
+        }
     }
 
     private void OnFreezeChanged(bool frozen)
     {
         if (rb != null) rb.mass = frozen ? baseMass * massMultiplier : baseMass;
+
         if (combat != null)
         {
             if (frozen)
@@ -43,6 +52,8 @@ public class EnemyFreezeHandler : MonoBehaviour
                 combat.useTouchDamage = cachedUseTouchDamage;
             }
         }
-        if (iceVisual != null) iceVisual.SetActive(frozen);
+
+        if (iceVisual != null)
+            iceVisual.SetActive(frozen);
     }
 }
