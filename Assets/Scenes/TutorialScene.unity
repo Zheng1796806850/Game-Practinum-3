@@ -2712,7 +2712,7 @@ Transform:
   m_GameObject: {fileID: 267722963}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 49.69, y: -33.87, z: -10}
+  m_LocalPosition: {x: 48.204, y: -33.87, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4804,11 +4804,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3698339977001980514, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.053
+      value: -0.154
       objectReference: {fileID: 0}
     - target: {fileID: 3698339977001980514, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -6.5
+      value: -6.538
       objectReference: {fileID: 0}
     - target: {fileID: 3698339977001980514, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_LocalPosition.z
@@ -8741,7 +8741,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tutorialEndPanel: {fileID: 317518828}
-  mainMenuSceneName: MainMenu
+  mainMenuSceneName: MainMenuScene
 --- !u!61 &776849194
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -13661,6 +13661,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1564561510}
     m_Modifications:
+    - target: {fileID: 3368945927008636826, guid: e69c685159b39a14a8578a85ea54354f, type: 3}
+      propertyPath: autoReset
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5174928957728157103, guid: e69c685159b39a14a8578a85ea54354f, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.6927
