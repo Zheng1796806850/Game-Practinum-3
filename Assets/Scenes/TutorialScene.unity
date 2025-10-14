@@ -3272,6 +3272,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
+      propertyPath: activationPercent
+      value: 95
+      objectReference: {fileID: 0}
+    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
       propertyPath: decayPerSecondPercent
       value: 2
       objectReference: {fileID: 0}
@@ -4886,6 +4890,10 @@ PrefabInstance:
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: accept
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
+      propertyPath: activationPercent
+      value: 95
       objectReference: {fileID: 0}
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: decayPerSecondPercent
@@ -13528,6 +13536,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
+      propertyPath: activationPercent
+      value: 95
+      objectReference: {fileID: 0}
+    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
       propertyPath: decayPerSecondPercent
       value: 2
       objectReference: {fileID: 0}
@@ -17779,6 +17791,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
+      propertyPath: activationPercent
+      value: 95
+      objectReference: {fileID: 0}
+    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
+      propertyPath: deactivationPercent
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: decayPerSecondPercent
       value: 1
       objectReference: {fileID: 0}
@@ -19151,6 +19171,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
+      propertyPath: activationPercent
+      value: 95
+      objectReference: {fileID: 0}
+    - target: {fileID: 1698249007541540494, guid: 2380b08aecf1d154f8f6e8dc2609b4a5, type: 3}
       propertyPath: decayPerSecondPercent
       value: 2.5
       objectReference: {fileID: 0}
@@ -19241,6 +19265,14 @@ PrefabInstance:
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: accept
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
+      propertyPath: activationPercent
+      value: 95
+      objectReference: {fileID: 0}
+    - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
+      propertyPath: deactivationPercent
+      value: 80
       objectReference: {fileID: 0}
     - target: {fileID: 184074804712570072, guid: 4481cc839c7d11f44836d244e8a54a0b, type: 3}
       propertyPath: decayPerSecondPercent
