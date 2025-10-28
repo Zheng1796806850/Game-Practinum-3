@@ -60,7 +60,14 @@ public class ElementalGenerator : MonoBehaviour
         if (Time.time - lastHitTime < retriggerCooldown) return;
         if (!Accepts(proj)) return;
 
-        ChargePercent = Mathf.Min(100f, ChargePercent + perHitChargePercent);
+        float add = perHitChargePercent;
+        var payload = other.GetComponent<GeneratorChargePayload>();
+        if (payload != null && payload.chargePercent >= 0f)
+        {
+            add = payload.chargePercent;
+        }
+
+        ChargePercent = Mathf.Min(100f, ChargePercent + add);
         EvaluateActivation();
         RefreshUI();
 

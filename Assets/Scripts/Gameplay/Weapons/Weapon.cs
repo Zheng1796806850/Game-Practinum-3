@@ -41,6 +41,25 @@ public class Weapon : MonoBehaviour
         return true;
     }
 
+    public bool TryFireReturnProjectile(Vector2 direction, out Projectile projectile, out GameObject bulletGO)
+    {
+        projectile = null;
+        bulletGO = null;
+        if (!CanFire()) return false;
+        if (bulletPrefab == null || firePoint == null) return false;
+
+        bulletGO = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        var rb = bulletGO.GetComponent<Rigidbody2D>();
+        projectile = bulletGO.GetComponent<Projectile>();
+
+        Vector2 vel = direction.normalized * bulletSpeed;
+        if (rb != null) rb.linearVelocity = vel;
+        if (projectile != null) projectile.Init(owner: owner, damage: damage, velocity: vel);
+
+        _cooldownTimer = fireCooldown;
+        return true;
+    }
+
     public void Fire(Vector2 direction)
     {
         TryFire(direction);

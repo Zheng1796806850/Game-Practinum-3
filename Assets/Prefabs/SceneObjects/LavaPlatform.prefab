@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5367649885397577437}
   - component: {fileID: 6296836789913819608}
-  m_Layer: 4
+  m_Layer: 6
   m_Name: LavaHitTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 1717475812328303675}
   - component: {fileID: 3223855522283547767}
   - component: {fileID: 8508049898404791811}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: LavaPlatform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -195,6 +195,7 @@ MonoBehaviour:
   pauseAtTop: 0.1
   pauseAtBottom: 0.1
   startWidth: 0.5
+  requireActivation: 0
   unfreezeMode: 0
   defaultFreezeDuration: 3
   meltWhenHitByFireInTimedMode: 1
@@ -259,7 +260,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6843798754056920118}
   - component: {fileID: 3273160666925011253}
-  m_Layer: 4
+  m_Layer: 6
   m_Name: LavaVisualRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +347,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8969653777601919765}
   - component: {fileID: 8874475198809262506}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: IceVisualRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -433,7 +434,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6325542408608626230}
   - component: {fileID: 7498439120437761903}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: IceCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}

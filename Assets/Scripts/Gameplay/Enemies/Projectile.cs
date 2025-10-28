@@ -18,6 +18,8 @@ public class Projectile : MonoBehaviour
     public float fireDotInterval = 1f;
     public float fireDotDamage = 1;
     public float iceFreezeDuration = 2f;
+    public float bonusDamageIfTargetFrozen = 0f;
+    public GameObject onHitParticlePrefab;
 
     private Rigidbody2D rb;
     private GameObject owner;
@@ -69,41 +71,75 @@ public class Projectile : MonoBehaviour
 
         if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
         {
+            bool frozenBefore = false;
+            if (otherRoot.TryGetComponent<Health>(out var h1))
+            {
+                frozenBefore = h1.IsFrozen;
+            }
             damageable.ApplyDamage(new DamageInfo(dmg, dtype, owner));
+            if (projectileType == ProjectileType.Ice)
+            {
+                if (otherRoot.TryGetComponent<Health>(out var h2))
+                {
+                    h2.ApplyFreeze(iceFreezeDuration);
+                    if (bonusDamageIfTargetFrozen > 0f)
+                    {
+                        if (h2.IsFrozen || frozenBefore) damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                    }
+                }
+                else if (other.TryGetComponent<IFreezable>(out var freezable))
+                {
+                    freezable.ApplyFreeze(iceFreezeDuration);
+                }
+                else
+                {
+                    var parentFreezable = other.GetComponentInParent<IFreezable>();
+                    if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
+                }
+            }
+            else if (projectileType == ProjectileType.Fire)
+            {
+                if (otherRoot.TryGetComponent<Health>(out var h3))
+                {
+                    h3.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+                }
+            }
+        }
+        else
+        {
+            if (projectileType == ProjectileType.Fire)
+            {
+                if (other.TryGetComponent<WaterPlatform>(out var water))
+                {
+                    water.TryMeltFromFire();
+                }
+                else
+                {
+                    var parentWater = other.GetComponentInParent<WaterPlatform>();
+                    if (parentWater != null) parentWater.TryMeltFromFire();
+                }
+            }
+            else if (projectileType == ProjectileType.Ice)
+            {
+                if (otherRoot.TryGetComponent<Health>(out var h4))
+                {
+                    h4.ApplyFreeze(iceFreezeDuration);
+                }
+                else if (other.TryGetComponent<IFreezable>(out var freezable2))
+                {
+                    freezable2.ApplyFreeze(iceFreezeDuration);
+                }
+                else
+                {
+                    var parentFreezable2 = other.GetComponentInParent<IFreezable>();
+                    if (parentFreezable2 != null) parentFreezable2.ApplyFreeze(iceFreezeDuration);
+                }
+            }
         }
 
-        if (projectileType == ProjectileType.Fire)
+        if (onHitParticlePrefab != null)
         {
-            if (otherRoot.TryGetComponent<Health>(out var health))
-            {
-                health.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
-            }
-
-            if (other.TryGetComponent<WaterPlatform>(out var water))
-            {
-                water.TryMeltFromFire();
-            }
-            else
-            {
-                var parentWater = other.GetComponentInParent<WaterPlatform>();
-                if (parentWater != null) parentWater.TryMeltFromFire();
-            }
-        }
-        else if (projectileType == ProjectileType.Ice)
-        {
-            if (otherRoot.TryGetComponent<Health>(out var health))
-            {
-                health.ApplyFreeze(iceFreezeDuration);
-            }
-            else if (other.TryGetComponent<IFreezable>(out var freezable))
-            {
-                freezable.ApplyFreeze(iceFreezeDuration);
-            }
-            else
-            {
-                var parentFreezable = other.GetComponentInParent<IFreezable>();
-                if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
-            }
+            Instantiate(onHitParticlePrefab, transform.position, Quaternion.identity);
         }
 
         if (remainingPierce > 0)

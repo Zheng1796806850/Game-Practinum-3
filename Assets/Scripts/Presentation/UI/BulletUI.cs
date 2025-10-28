@@ -5,54 +5,63 @@ public class BulletUI : MonoBehaviour
 {
     [Header("Mode Icon")]
     public Image icon;
-    public Sprite fireSprite;
-    public Sprite iceSprite;
+    public Sprite boopSprite;
+    public Sprite electricSprite;
 
-    [Header("Fire Bar")]
-    public Slider fireBar;
+    [Header("Boop Bar")]
+    public Slider boopBar;
 
-    [Header("Ice Dots")]
-    public Image[] iceDotImages;
-    public Sprite iceFullSprite;
-    public Sprite iceEmptySprite;
-    public Color iceFullColor = Color.white;
-    public Color iceEmptyColor = new Color(1f, 1f, 1f, 0.25f);
+    [Header("Electric Bar")]
+    public Slider electricBar;
 
-    public void UpdateIcon(bool useFire)
+    [Header("Cooldown Wheel")]
+    public Image cooldownWheel;
+
+    public void ShowBoopOnly()
     {
-        if (icon == null) return;
-
-        if (useFire && fireSprite != null) icon.sprite = fireSprite;
-        else if (!useFire && iceSprite != null) icon.sprite = iceSprite;
+        if (boopBar != null) boopBar.gameObject.SetActive(true);
+        if (electricBar != null) electricBar.gameObject.SetActive(false);
+        if (cooldownWheel != null) cooldownWheel.gameObject.SetActive(true);
+        if (icon != null && boopSprite != null) icon.sprite = boopSprite;
     }
 
-    public void UpdateFireBar(float current, float max)
+    public void ShowElectricOnly()
     {
-        if (fireBar == null) return;
-        fireBar.maxValue = Mathf.Max(1f, max);
-        fireBar.value = Mathf.Clamp(current, 0f, max);
+        if (boopBar != null) boopBar.gameObject.SetActive(false);
+        if (electricBar != null) electricBar.gameObject.SetActive(true);
+        if (cooldownWheel != null) cooldownWheel.gameObject.SetActive(true);
+        if (icon != null && electricSprite != null) icon.sprite = electricSprite;
     }
 
-    public void UpdateIceDots(int current, int max)
+    public void HideAll()
     {
-        if (iceDotImages == null || iceDotImages.Length == 0) return;
+        if (boopBar != null) boopBar.gameObject.SetActive(false);
+        if (electricBar != null) electricBar.gameObject.SetActive(false);
+        if (cooldownWheel != null) cooldownWheel.gameObject.SetActive(false);
+    }
 
-        int visible = Mathf.Min(max, iceDotImages.Length);
-        for (int i = 0; i < iceDotImages.Length; i++)
-        {
-            bool withinMax = i < visible;
-            if (!withinMax)
-            {
-                iceDotImages[i].enabled = false;
-                continue;
-            }
+    public void UpdateBoopBar(float current, float max)
+    {
+        if (boopBar == null) return;
+        boopBar.maxValue = Mathf.Max(1f, max);
+        boopBar.value = Mathf.Clamp(current, 0f, max);
+    }
 
-            iceDotImages[i].enabled = true;
-            bool filled = i < current;
-            if (iceFullSprite != null && iceEmptySprite != null)
-                iceDotImages[i].sprite = filled ? iceFullSprite : iceEmptySprite;
+    public void UpdateElectricBar01(float ratio01)
+    {
+        if (electricBar == null) return;
+        float t = Mathf.Clamp01(ratio01);
+        electricBar.maxValue = 1f;
+        electricBar.value = t;
+    }
 
-            iceDotImages[i].color = filled ? iceFullColor : iceEmptyColor;
-        }
+    public void UpdateCooldown01(float ratio01)
+    {
+        if (cooldownWheel == null) return;
+        float t = Mathf.Clamp01(ratio01);
+        cooldownWheel.type = Image.Type.Filled;
+        cooldownWheel.fillMethod = Image.FillMethod.Radial360;
+        cooldownWheel.fillAmount = t;
+        if (!cooldownWheel.gameObject.activeSelf) cooldownWheel.gameObject.SetActive(true);
     }
 }
