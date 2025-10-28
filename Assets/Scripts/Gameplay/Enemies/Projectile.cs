@@ -21,6 +21,10 @@ public class Projectile : MonoBehaviour
     public float bonusDamageIfTargetFrozen = 0f;
     public GameObject onHitParticlePrefab;
 
+    [Header("Target Filter")]
+    public bool limitDamageToTag = false;
+    public string damageOnlyTag = "";
+
     private Rigidbody2D rb;
     private GameObject owner;
     private int remainingPierce;
@@ -71,37 +75,47 @@ public class Projectile : MonoBehaviour
 
         if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
         {
+            bool allowDamage = true;
+            if (limitDamageToTag && !string.IsNullOrEmpty(damageOnlyTag))
+            {
+                if (!otherRoot.CompareTag(damageOnlyTag)) allowDamage = false;
+            }
+
             bool frozenBefore = false;
             if (otherRoot.TryGetComponent<Health>(out var h1))
             {
                 frozenBefore = h1.IsFrozen;
             }
-            damageable.ApplyDamage(new DamageInfo(dmg, dtype, owner));
-            if (projectileType == ProjectileType.Ice)
+
+            if (allowDamage)
             {
-                if (otherRoot.TryGetComponent<Health>(out var h2))
+                damageable.ApplyDamage(new DamageInfo(dmg, dtype, owner));
+                if (projectileType == ProjectileType.Ice)
                 {
-                    h2.ApplyFreeze(iceFreezeDuration);
-                    if (bonusDamageIfTargetFrozen > 0f)
+                    if (otherRoot.TryGetComponent<Health>(out var h2))
                     {
-                        if (h2.IsFrozen || frozenBefore) damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                        h2.ApplyFreeze(iceFreezeDuration);
+                        if (bonusDamageIfTargetFrozen > 0f)
+                        {
+                            if (h2.IsFrozen || frozenBefore) damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                        }
+                    }
+                    else if (other.TryGetComponent<IFreezable>(out var freezable))
+                    {
+                        freezable.ApplyFreeze(iceFreezeDuration);
+                    }
+                    else
+                    {
+                        var parentFreezable = other.GetComponentInParent<IFreezable>();
+                        if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
                     }
                 }
-                else if (other.TryGetComponent<IFreezable>(out var freezable))
+                else if (projectileType == ProjectileType.Fire)
                 {
-                    freezable.ApplyFreeze(iceFreezeDuration);
-                }
-                else
-                {
-                    var parentFreezable = other.GetComponentInParent<IFreezable>();
-                    if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
-                }
-            }
-            else if (projectileType == ProjectileType.Fire)
-            {
-                if (otherRoot.TryGetComponent<Health>(out var h3))
-                {
-                    h3.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+                    if (otherRoot.TryGetComponent<Health>(out var h3))
+                    {
+                        h3.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+                    }
                 }
             }
         }

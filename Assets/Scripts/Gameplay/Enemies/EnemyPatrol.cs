@@ -1,114 +1,116 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(Weapon))]
 [RequireComponent(typeof(Health))]
 public class EnemyPatrol : MonoBehaviour
 {
+    public enum PatrolMode { AutoFlip, TurnPoints }
+
+    public bool movementEnabled = true;
+
     public float moveSpeed = 2f;
     public Transform groundCheck;
     public float groundCheckDistance = 0.25f;
     public float wallCheckDistance = 0.3f;
     public LayerMask groundMask;
 
-    public Transform player;
-    public string playerTag = "Player";
-
-    [Header("Detection Settings")]
-    public float detectLeft = 4f;
-    public float detectRight = 4f;
-    public float detectUp = 2f;
-    public float detectDown = 1f;
-
-    private bool enableShooting = false;
-    private float attackRange = 5f;
-    private float attackInterval = 2f;
     public Transform graphics;
 
-    [Header("Edge Behavior")]
-    public bool stopAtEdge = true;
+    public PatrolMode patrolMode = PatrolMode.AutoFlip;
+    public Transform[] turnPoints;
+    public float reachThreshold = 0.2f;
+    public bool pingPong = true;
+
+    public bool useAcceleration = true;
+    public float maxAccel = 30f;
+    public float maxDecel = 40f;
+    public bool capHorizontalSpeed = false;
+    public float maxHorizontalSpeed = 8f;
 
     private Rigidbody2D rb;
-    private Weapon weapon;
     private Health health;
     private bool facingRight = true;
-    private float attackTimer;
+
+    private int turnIndex = 0;
+    private int turnDir = 1;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        weapon = GetComponent<Weapon>();
         health = GetComponent<Health>();
-        health.OnDied += OnDeath;
-    }
-
-    void Start()
-    {
-        if (player == null && !string.IsNullOrEmpty(playerTag))
-        {
-            var go = GameObject.FindGameObjectWithTag(playerTag);
-            if (go != null) player = go.transform;
-        }
     }
 
     void Update()
     {
-        if (health != null && health.IsFrozen)
-        {
-            //rb.linearVelocity = Vector2.zero;
-            return;
-        }
+        if (health != null && health.IsFrozen) return;
+        if (!movementEnabled || rb == null) return;
 
-        if (player == null)
+        if (patrolMode == PatrolMode.AutoFlip)
         {
-            Patrol();
-            return;
-        }
-
-        if (IsPlayerInDetectionZone())
-        {
-            MoveTowardsPlayer();
-            attackTimer -= Time.deltaTime;
-            if (enableShooting && IsPlayerInAttackRange() && attackTimer <= 0f)
-            {
-                Vector2 dir = (player.position - transform.position).normalized;
-                if ((dir.x > 0 && !facingRight) || (dir.x < 0 && facingRight)) Flip();
-                weapon.Fire(dir);
-                attackTimer = attackInterval;
-            }
+            if (!CanMoveForward()) Flip();
+            float desiredSpeedX = (facingRight ? 1f : -1f) * moveSpeed;
+            ApplyHorizontalControl(desiredSpeedX);
         }
         else
         {
-            Patrol();
-        }
-    }
+            float desiredSpeedX = 0f;
 
-    private void Patrol()
-    {
-        if (!CanMoveForward())
-        {
-            Flip();
-        }
-
-        rb.linearVelocity = new Vector2((facingRight ? 1f : -1f) * moveSpeed, rb.linearVelocity.y);
-    }
-
-    private void MoveTowardsPlayer()
-    {
-        float dir = player.position.x - transform.position.x;
-
-        if (!CanMoveForward())
-        {
-            if (stopAtEdge)
+            if (turnPoints == null || turnPoints.Length == 0)
             {
-                rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+                desiredSpeedX = (facingRight ? 1f : -1f) * moveSpeed;
+                ApplyHorizontalControl(desiredSpeedX);
                 return;
             }
+
+            Transform target = turnPoints[Mathf.Clamp(turnIndex, 0, turnPoints.Length - 1)];
+            if (target == null)
+            {
+                ApplyHorizontalControl(0f);
+                return;
+            }
+
+            Vector2 dir = ((Vector2)target.position - (Vector2)transform.position);
+            if (dir.x > 0f && !facingRight) Flip();
+            if (dir.x < 0f && facingRight) Flip();
+
+            if (dir.magnitude <= reachThreshold)
+            {
+                if (pingPong)
+                {
+                    if (turnIndex == 0) turnDir = 1;
+                    else if (turnIndex == turnPoints.Length - 1) turnDir = -1;
+                    turnIndex = Mathf.Clamp(turnIndex + turnDir, 0, turnPoints.Length - 1);
+                }
+                else
+                {
+                    turnIndex = (turnIndex + 1) % turnPoints.Length;
+                }
+            }
+
+            desiredSpeedX = Mathf.Sign(dir.x) * moveSpeed;
+            ApplyHorizontalControl(desiredSpeedX);
+        }
+    }
+
+    private void ApplyHorizontalControl(float desiredSpeedX)
+    {
+        if (!useAcceleration)
+        {
+            Vector2 v = rb.linearVelocity;
+            v.x = desiredSpeedX;
+            if (capHorizontalSpeed) v.x = Mathf.Clamp(v.x, -maxHorizontalSpeed, maxHorizontalSpeed);
+            rb.linearVelocity = v;
+            return;
         }
 
-        rb.linearVelocity = new Vector2(Mathf.Sign(dir) * moveSpeed, rb.linearVelocity.y);
-
-        if ((dir > 0f && !facingRight) || (dir < 0f && facingRight)) Flip();
+        float dt = Time.deltaTime;
+        Vector2 vcur = rb.linearVelocity;
+        float accel = Mathf.Abs(desiredSpeedX) > Mathf.Abs(vcur.x) ? maxAccel : maxDecel;
+        float dv = desiredSpeedX - vcur.x;
+        float step = Mathf.Clamp(dv, -accel * dt, accel * dt);
+        float newVx = vcur.x + step;
+        if (capHorizontalSpeed) newVx = Mathf.Clamp(newVx, -maxHorizontalSpeed, maxHorizontalSpeed);
+        rb.linearVelocity = new Vector2(newVx, vcur.y);
     }
 
     private bool CanMoveForward()
@@ -129,21 +131,6 @@ public class EnemyPatrol : MonoBehaviour
         return hasGround && !hasWall;
     }
 
-    private bool IsPlayerInDetectionZone()
-    {
-        Vector2 localPos = transform.InverseTransformPoint(player.position);
-
-        return localPos.x >= -detectLeft &&
-               localPos.x <= detectRight &&
-               localPos.y >= -detectDown &&
-               localPos.y <= detectUp;
-    }
-
-    private bool IsPlayerInAttackRange()
-    {
-        return Vector2.Distance(transform.position, player.position) <= attackRange;
-    }
-
     private void Flip()
     {
         facingRight = !facingRight;
@@ -161,24 +148,6 @@ public class EnemyPatrol : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        for (int i = 0; i < collision.contactCount; i++)
-        {
-            var normal = collision.GetContact(i).normal;
-            if (Mathf.Abs(normal.x) > 0.5f)
-            {
-                Flip();
-                break;
-            }
-        }
-    }
-
-    private void OnDeath(GameObject killer)
-    {
-        Destroy(gameObject);
-    }
-
     void OnDrawGizmosSelected()
     {
         if (groundCheck != null)
@@ -188,15 +157,23 @@ public class EnemyPatrol : MonoBehaviour
         }
 
         Gizmos.color = Color.cyan;
-        Vector3 wallDir = (facingRight ? Vector3.right : Vector3.left) * wallCheckDistance;
+        Vector3 wallDir = Vector3.right * wallCheckDistance;
         Gizmos.DrawLine(transform.position, transform.position + wallDir);
+        Gizmos.DrawLine(transform.position, transform.position - wallDir);
 
-        Gizmos.color = Color.red;
-        Vector3 localCenter = new Vector3((detectRight - detectLeft) * 0.5f, (detectUp - detectDown) * 0.5f, 0f);
-        Vector3 localSize = new Vector3(detectLeft + detectRight, detectUp + detectDown, 0.1f);
-        Matrix4x4 oldMatrix = Gizmos.matrix;
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawWireCube(localCenter, localSize);
-        Gizmos.matrix = oldMatrix;
+        if (turnPoints != null && turnPoints.Length > 0)
+        {
+            Gizmos.color = Color.green;
+            for (int i = 0; i < turnPoints.Length; i++)
+            {
+                var t = turnPoints[i];
+                if (t == null) continue;
+                Gizmos.DrawSphere(t.position, 0.08f);
+                if (i + 1 < turnPoints.Length && turnPoints[i + 1] != null)
+                {
+                    Gizmos.DrawLine(t.position, turnPoints[i + 1].position);
+                }
+            }
+        }
     }
 }

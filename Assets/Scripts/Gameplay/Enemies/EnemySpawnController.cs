@@ -94,6 +94,7 @@ class SpawnedEnemyTracker : MonoBehaviour
     public int entryIndex;
 
     private Health health;
+    private bool hasDied;
 
     void Awake()
     {
@@ -114,9 +115,14 @@ class SpawnedEnemyTracker : MonoBehaviour
 
     private void OnDied(GameObject killer)
     {
+        if (hasDied) return;
+        hasDied = true;
+
         if (owner != null)
         {
             owner.NotifyEnemyDied(entryIndex);
         }
+
+        Destroy(gameObject);
     }
 }

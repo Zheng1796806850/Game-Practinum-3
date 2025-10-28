@@ -568,8 +568,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 156575d221185314aab95c97e5a4a2f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 10
-  useShield: 1
+  maxHP: 20
+  useShield: 0
   shieldBar: {fileID: 9083474858688221645}
   maxShield: 10
 --- !u!114 &9052161210367902364
@@ -602,21 +602,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f98e57bfdfe974699d3d8e492a8c68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1.5
+  movementEnabled: 1
+  moveSpeed: 2.5
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
   wallCheckDistance: 0.6
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  player: {fileID: 0}
-  playerTag: Player
-  detectLeft: 3.5
-  detectRight: 6
-  detectUp: 3
-  detectDown: 1
-  graphics: {fileID: 1326028663991244193}
-  stopAtEdge: 1
+  graphics: {fileID: 0}
+  patrolMode: 0
+  turnPoints: []
+  reachThreshold: 0.2
+  pingPong: 1
+  useAcceleration: 1
+  maxAccel: 30
+  maxDecel: 40
+  capHorizontalSpeed: 0
+  maxHorizontalSpeed: 8
 --- !u!114 &653251711636155172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -647,11 +650,11 @@ MonoBehaviour:
   overrideBulletDamage: 0
   bulletDamage: 1
   useTouchDamage: 1
-  touchDamage: 1
+  touchDamage: 3
   touchCooldown: 0.5
   damageMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 8
 --- !u!114 &3225918242825512986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -669,6 +672,7 @@ MonoBehaviour:
   massMultiplier: 5
   iceVisual: {fileID: 8550168794803175932}
   useFrozenVisuals: 0
+  keepTouchDamageWhenFrozen: 1
 --- !u!1 &5004488364103908749
 GameObject:
   m_ObjectHideFlags: 0

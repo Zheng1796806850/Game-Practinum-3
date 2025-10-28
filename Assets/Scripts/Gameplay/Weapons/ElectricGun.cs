@@ -77,10 +77,12 @@ public class ElectricGun : MonoBehaviour
         }
 
         bool halfEffect = k < 0.81f;
+        float damageScale = halfEffect ? 0.5f : 1f;
+        float damageToUse = (weapon != null ? weapon.damage : 1f) * damageScale;
 
         if (weapon != null)
         {
-            if (weapon.TryFireReturnProjectile(aimDir, out var proj, out var go))
+            if (weapon.TryFireReturnProjectile(aimDir, damageToUse, out var proj, out var go))
             {
                 if (proj != null)
                 {

@@ -41,6 +41,23 @@ public class Weapon : MonoBehaviour
         return true;
     }
 
+    public bool TryFire(float damageOverride, Vector2 direction)
+    {
+        if (!CanFire()) return false;
+        if (bulletPrefab == null || firePoint == null) return false;
+
+        var bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        var rb = bullet.GetComponent<Rigidbody2D>();
+        var proj = bullet.GetComponent<Projectile>();
+
+        Vector2 vel = direction.normalized * bulletSpeed;
+        if (rb != null) rb.linearVelocity = vel;
+        if (proj != null) proj.Init(owner: owner, damage: damageOverride, velocity: vel);
+
+        _cooldownTimer = fireCooldown;
+        return true;
+    }
+
     public bool TryFireReturnProjectile(Vector2 direction, out Projectile projectile, out GameObject bulletGO)
     {
         projectile = null;
@@ -60,8 +77,32 @@ public class Weapon : MonoBehaviour
         return true;
     }
 
+    public bool TryFireReturnProjectile(Vector2 direction, float damageOverride, out Projectile projectile, out GameObject bulletGO)
+    {
+        projectile = null;
+        bulletGO = null;
+        if (!CanFire()) return false;
+        if (bulletPrefab == null || firePoint == null) return false;
+
+        bulletGO = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+        var rb = bulletGO.GetComponent<Rigidbody2D>();
+        projectile = bulletGO.GetComponent<Projectile>();
+
+        Vector2 vel = direction.normalized * bulletSpeed;
+        if (rb != null) rb.linearVelocity = vel;
+        if (projectile != null) projectile.Init(owner: owner, damage: damageOverride, velocity: vel);
+
+        _cooldownTimer = fireCooldown;
+        return true;
+    }
+
     public void Fire(Vector2 direction)
     {
         TryFire(direction);
+    }
+
+    public void Fire(Vector2 direction, float damageOverride)
+    {
+        TryFire(damageOverride, direction);
     }
 }

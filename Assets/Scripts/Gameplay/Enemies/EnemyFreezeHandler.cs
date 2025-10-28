@@ -8,49 +8,75 @@ public class EnemyFreezeHandler : MonoBehaviour
     public float massMultiplier = 5f;
     [SerializeField] private GameObject iceVisual;
     public bool useFrozenVisuals = false;
+    public bool keepTouchDamageWhenFrozen = false;
 
     private Health health;
     private float baseMass;
     private bool cachedUseTouchDamage;
+    private bool inited;
 
     void Awake()
     {
         health = GetComponent<Health>();
         if (rb == null) rb = GetComponent<Rigidbody2D>();
-        if (combat == null) combat = GetComponent<EnemyCombatController>();
-        baseMass = rb != null ? rb.mass : 1f;
         if (combat != null) cachedUseTouchDamage = combat.useTouchDamage;
+        if (rb != null) baseMass = rb.mass;
         health.OnFreezeStateChanged += OnFreezeChanged;
-        if (iceVisual != null) iceVisual.SetActive(false);
+        inited = true;
+    }
+
+    void OnEnable()
+    {
+        if (!inited)
+        {
+            health = GetComponent<Health>();
+            if (rb == null) rb = GetComponent<Rigidbody2D>();
+            if (combat != null) cachedUseTouchDamage = combat.useTouchDamage;
+            if (rb != null) baseMass = rb.mass;
+            health.OnFreezeStateChanged += OnFreezeChanged;
+            inited = true;
+        }
     }
 
     void OnDestroy()
     {
-        if (health != null) health.OnFreezeStateChanged -= OnFreezeChanged;
+        if (health != null)
+        {
+            health.OnFreezeStateChanged -= OnFreezeChanged;
+        }
     }
 
     private void OnFreezeChanged(bool frozen)
     {
-        if (rb != null) rb.mass = frozen ? baseMass * massMultiplier : baseMass;
+        if (rb != null)
+        {
+            rb.mass = frozen ? baseMass * Mathf.Max(1f, massMultiplier) : baseMass;
+            if (!frozen) rb.linearVelocity = new Vector2(rb.linearVelocity.x * 0.25f, rb.linearVelocity.y);
+        }
+
         if (combat != null)
         {
             if (frozen)
             {
-                cachedUseTouchDamage = combat.useTouchDamage;
-                combat.useTouchDamage = false;
+                if (!keepTouchDamageWhenFrozen)
+                {
+                    cachedUseTouchDamage = combat.useTouchDamage;
+                    combat.useTouchDamage = false;
+                }
             }
             else
             {
-                combat.useTouchDamage = cachedUseTouchDamage;
+                if (!keepTouchDamageWhenFrozen)
+                {
+                    combat.useTouchDamage = cachedUseTouchDamage;
+                }
             }
         }
-        if (iceVisual != null && useFrozenVisuals)
+
+        if (iceVisual != null)
         {
-            iceVisual.SetActive(frozen);
-        }
-        else
-        {
-            if (iceVisual != null) iceVisual.SetActive(false);
+            if (useFrozenVisuals) iceVisual.SetActive(frozen);
+            else iceVisual.SetActive(false);
         }
     }
 }

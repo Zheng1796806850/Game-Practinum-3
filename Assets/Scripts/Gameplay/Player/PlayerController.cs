@@ -92,10 +92,11 @@ public class PlayerController : MonoBehaviour
     private bool IsGrounded()
     {
         if (capsule == null) return false;
-        Vector2 p = (Vector2)transform.position + capsule.offset;
-        Vector2 size = capsule.size;
+        var bounds = capsule.bounds;
         float extra = 0.05f;
-        RaycastHit2D hit = Physics2D.BoxCast(p + Vector2.down * (size.y * 0.5f - extra * 0.5f), new Vector2(size.x * 0.9f, extra), 0f, Vector2.down, 0f, groundMask);
-        return hit.collider != null;
+        Vector2 center = new Vector2(bounds.center.x, bounds.min.y - extra * 0.5f);
+        Vector2 size = new Vector2(bounds.size.x * 0.9f, extra);
+        Collider2D hit = Physics2D.OverlapBox(center, size, 0f, groundMask);
+        return hit != null;
     }
 }

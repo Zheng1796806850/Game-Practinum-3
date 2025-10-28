@@ -433,8 +433,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1069770987965009820}
   - component: {fileID: 6633219695812274571}
-  - component: {fileID: 7997916310937749191}
-  - component: {fileID: 2265185230201889218}
   m_Layer: 0
   m_Name: Hand
   m_TagString: Untagged
@@ -513,63 +511,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7997916310937749191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3538627369450455209}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5c55a67aec628f41b6a665b31d55606, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  firePoint: {fileID: 3403806881188929036}
-  owner: {fileID: 6179979184917067807}
-  windupTime: 1
-  cooldown: 1.2
-  sectorRadius: 3.5
-  sectorAngleDeg: 60
-  damage: 1
-  pushImpulse: 12
-  recoilImpulse: 2
-  recoilMode: 1
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 320
-  shootParticles: {fileID: 1409653619418374098, guid: ebed29d56c68fa64285b31c01c2b0049, type: 3}
-  allowMultipleHitsPerFire: 1
-  spawnGeneratorProxyProjectile: 1
-  generatorProxyProjectilePrefab: {fileID: 5726331413828171566, guid: a77a2fc97b62d6245b6aa3bdaf000c78, type: 3}
-  generatorMask:
-    serializedVersion: 2
-    m_Bits: 512
-  generatorProxySpeed: 20
---- !u!114 &2265185230201889218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3538627369450455209}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db1875a05c8a934499c094faf3742a12, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weapon: {fileID: 8242508782343590631}
-  firePoint: {fileID: 3403806881188929036}
-  owner: {fileID: 6179979184917067807}
-  maxChargeTime: 5
-  cooldown: 2
-  fullFreezeDuration: 4
-  halfFreezeDuration: 2
-  bonusDamageIfFrozen: 0
-  generatorFullChargePercent: 100
-  generatorHalfChargePercent: 50
-  chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
-  releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
 --- !u!1 &4885297825840400540
 GameObject:
   m_ObjectHideFlags: 0
@@ -958,6 +899,8 @@ GameObject:
   - component: {fileID: 6398408641415069543}
   - component: {fileID: 8242508782343590631}
   - component: {fileID: 1998274075815931191}
+  - component: {fileID: 8698537218468533173}
+  - component: {fileID: 8646873316132395258}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -1116,16 +1059,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 284b72043ed442f4486af7432ef6963a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rb: {fileID: 2031078734043402749}
+  capsule: {fileID: 2244385824934481141}
   moveSpeed: 2
-  jumpForce: 5
-  graphics: {fileID: 3698339977001980514}
-  flipChildren: []
-  groundCheck: {fileID: 3984966863784340801}
-  groundCheckRadius: 0.15
-  groundLayer:
+  acceleration: 60
+  deceleration: 80
+  airControl: 0.6
+  groundMask:
     serializedVersion: 2
-    m_Bits: 448
-  isGrounded: 0
+    m_Bits: 64
+  jumpForce: 6.5
+  coyoteTime: 0.1
+  jumpBuffer: 0.1
+  recoilDamping: 8
 --- !u!114 &5658930660087295488
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1170,7 +1116,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 5726331413828171566, guid: 0533a8380ffe9ab4bbdfbde7b71285c0, type: 3}
   firePoint: {fileID: 3403806881188929036}
   bulletSpeed: 12
-  damage: 0
+  damage: 3
   owner: {fileID: 6179979184917067807}
   fireCooldown: 0.2
 --- !u!114 &1998274075815931191
@@ -1189,12 +1135,74 @@ MonoBehaviour:
   switchKey: 113
   fireAxis: Fire1
   weaponPivot: {fileID: 1069770987965009820}
+  sharedFirePoint: {fileID: 3403806881188929036}
+  firePointDistance: 0.4
   bulletUI: {fileID: 0}
-  boopGun: {fileID: 7997916310937749191}
+  flipSpriteByAim: 1
+  invertFlipX: 0
+  spritesToFlip:
+  - {fileID: 237881959373765335}
+  boopGun: {fileID: 8698537218468533173}
   boopBarMax: 1
   boopRegenPerSecond: 0.75
   boopShotCost: 0.75
-  electricGun: {fileID: 2265185230201889218}
+  electricGun: {fileID: 8646873316132395258}
+--- !u!114 &8698537218468533173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6179979184917067807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c55a67aec628f41b6a665b31d55606, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firePoint: {fileID: 3403806881188929036}
+  owner: {fileID: 6179979184917067807}
+  windupTime: 1
+  cooldown: 1.2
+  sectorRadius: 5
+  sectorAngleDeg: 30
+  damage: 1
+  pushImpulse: 8
+  recoilVelocity: 2.5
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 320
+  shootParticles: {fileID: 1409653619418374098, guid: ebed29d56c68fa64285b31c01c2b0049, type: 3}
+  allowMultipleHitsPerFire: 1
+  spawnGeneratorProxyProjectile: 1
+  generatorProxyProjectilePrefab: {fileID: 5726331413828171566, guid: a77a2fc97b62d6245b6aa3bdaf000c78, type: 3}
+  generatorMask:
+    serializedVersion: 2
+    m_Bits: 512
+  generatorProxySpeed: 20
+--- !u!114 &8646873316132395258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6179979184917067807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db1875a05c8a934499c094faf3742a12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weapon: {fileID: 8242508782343590631}
+  firePoint: {fileID: 3403806881188929036}
+  owner: {fileID: 6179979184917067807}
+  maxChargeTime: 5
+  cooldown: 2
+  fullFreezeDuration: 4
+  halfFreezeDuration: 2
+  bonusDamageIfFrozen: 0
+  generatorFullChargePercent: 100
+  generatorHalfChargePercent: 50
+  chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
+  releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
 --- !u!1 &7344498492535541808
 GameObject:
   m_ObjectHideFlags: 0
@@ -1256,7 +1264,7 @@ Transform:
   m_GameObject: {fileID: 7791140932100791477}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 0.03820093, z: 0.009875292}
+  m_LocalPosition: {x: -0.309, y: 0.03820093, z: 0.009875292}
   m_LocalScale: {x: -0.9226222, y: -4.2445498, z: -1.1363636}
   m_ConstrainProportionsScale: 1
   m_Children: []

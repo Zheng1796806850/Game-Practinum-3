@@ -532,9 +532,9 @@ GameObject:
   - component: {fileID: 3181456188567523016}
   - component: {fileID: 8047163938570196849}
   - component: {fileID: 9052161210367902364}
-  - component: {fileID: 1478296297846493080}
-  - component: {fileID: 653251711636155172}
+  - component: {fileID: 8929991640703446534}
   - component: {fileID: 3588422126197852361}
+  - component: {fileID: 5151236132571502068}
   m_Layer: 8
   m_Name: Enemy_Range
   m_TagString: Enemy
@@ -695,7 +695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 156575d221185314aab95c97e5a4a2f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 10
+  maxHP: 20
   useShield: 0
   shieldBar: {fileID: 6797166865443194860}
   maxShield: 10
@@ -711,13 +711,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e953bb1caf7c8754ead9e0ac6f8bdff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 5726331413828171566, guid: 0533a8380ffe9ab4bbdfbde7b71285c0, type: 3}
+  bulletPrefab: {fileID: 5726331413828171566, guid: 523452dc0ffcf6440840cb56853df9aa, type: 3}
   firePoint: {fileID: 1077778358598365806}
   bulletSpeed: 3
   damage: 1
   owner: {fileID: 4780395053181748729}
   fireCooldown: 0.2
---- !u!114 &1478296297846493080
+--- !u!114 &8929991640703446534
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -726,59 +726,49 @@ MonoBehaviour:
   m_GameObject: {fileID: 4780395053181748729}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64f98e57bfdfe974699d3d8e492a8c68, type: 3}
+  m_Script: {fileID: 11500000, guid: 7efd0e6842953e04b9c3b766e351cdf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1.5
+  player: {fileID: 0}
+  playerTag: Player
+  patrolMode: 0
+  turnPoints: []
+  reachThreshold: 0.2
+  pingPong: 1
+  moveSpeed: 1
+  useAcceleration: 1
+  maxAccel: 30
+  maxDecel: 45
+  capHorizontalSpeed: 0
+  maxHorizontalSpeed: 8
+  graphics: {fileID: 1326028663991244193}
+  autoFlipOnObstacle: 1
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
-  wallCheckDistance: 0.3
+  wallCheckDistance: 0.6
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  player: {fileID: 0}
-  playerTag: Player
-  detectLeft: 3.5
-  detectRight: 7
-  detectUp: 3
-  detectDown: 1
-  graphics: {fileID: 1326028663991244193}
-  stopAtEdge: 1
---- !u!114 &653251711636155172
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4780395053181748729}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33e1100c3399fb049919fd0a4b85fa76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  playerTag: Player
-  useRanged: 1
-  manualFireOnly: 0
+  stopAtEdgeDuringChase: 1
   useRectDetection: 1
-  detectLeft: 3.5
-  detectRight: 7
-  detectUp: 3
+  detectLeft: 4
+  detectRight: 10
+  detectUp: 3.5
   detectDown: 1
-  detectionRange: 6
-  attackRange: 5
-  fireInterval: 1.5
-  fireForwardOnly: 1
-  overrideBulletSpeed: 0
-  bulletSpeed: 10
-  overrideBulletDamage: 0
-  bulletDamage: 1
-  useTouchDamage: 1
-  touchDamage: 1
-  touchCooldown: 0.5
-  damageMask:
-    serializedVersion: 2
-    m_Bits: 1
+  detectionRange: 7
+  attackRange: 10
+  chargeDuration: 2.5
+  faceTarget: 1
+  ignoreFreezeForShooting: 1
+  resetChargeOnFreeze: 1
+  overrideBulletSpeed: 1
+  bulletSpeed: 12
+  overrideBulletDamage: 1
+  bulletDamage: 10
+  bulletTagForSwitch: Fire
+  generatorChargePercent: 100
+  chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
+  shotParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
 --- !u!114 &3588422126197852361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -792,10 +782,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 6171015195545984151}
-  combat: {fileID: 653251711636155172}
+  combat: {fileID: 0}
   massMultiplier: 5
   iceVisual: {fileID: 4564991741405087812}
   useFrozenVisuals: 0
+  keepTouchDamageWhenFrozen: 1
+--- !u!114 &5151236132571502068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4780395053181748729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33e1100c3399fb049919fd0a4b85fa76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  playerTag: Player
+  useRanged: 0
+  manualFireOnly: 0
+  useRectDetection: 1
+  detectLeft: 4
+  detectRight: 4
+  detectUp: 2
+  detectDown: 1
+  detectionRange: 6
+  attackRange: 5
+  fireInterval: 1.5
+  fireForwardOnly: 1
+  overrideBulletSpeed: 0
+  bulletSpeed: 10
+  overrideBulletDamage: 0
+  bulletDamage: 1
+  useTouchDamage: 1
+  touchDamage: 2
+  touchCooldown: 0.5
+  damageMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!1 &5937839666218557597
 GameObject:
   m_ObjectHideFlags: 0
@@ -910,7 +936,7 @@ Transform:
   m_GameObject: {fileID: 6015785397821354850}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.87, y: -1.05, z: 0}
+  m_LocalPosition: {x: 0.929, y: -0.926, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

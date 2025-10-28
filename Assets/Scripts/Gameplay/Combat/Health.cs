@@ -20,6 +20,8 @@ public class Health : MonoBehaviour, IDamageable
     public System.Action<float, float> OnShieldChanged;
     public System.Action OnShieldDepleted;
 
+    public System.Action<DamageInfo> OnHit;
+
     private Coroutine fireDotRoutine;
     private Coroutine freezeRoutine;
 
@@ -32,6 +34,7 @@ public class Health : MonoBehaviour, IDamageable
 
     public void ApplyDamage(DamageInfo info)
     {
+        OnHit?.Invoke(info);
         if (Current <= 0f) return;
 
         if (useShield && ShieldCurrent > 0f)
