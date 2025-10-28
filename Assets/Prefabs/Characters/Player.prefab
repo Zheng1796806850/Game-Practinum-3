@@ -972,7 +972,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 17426746270384133, guid: bd74b03497bd1b548a75651d588c1ec0, type: 3}
+  m_Sprite: {fileID: -6306078467499190918, guid: 7fa1584ec07347047afb4c76dfa75d22, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1116,7 +1116,7 @@ MonoBehaviour:
   bulletPrefab: {fileID: 5726331413828171566, guid: 0533a8380ffe9ab4bbdfbde7b71285c0, type: 3}
   firePoint: {fileID: 3403806881188929036}
   bulletSpeed: 12
-  damage: 3
+  damage: 4
   owner: {fileID: 6179979184917067807}
   fireCooldown: 0.2
 --- !u!114 &1998274075815931191
