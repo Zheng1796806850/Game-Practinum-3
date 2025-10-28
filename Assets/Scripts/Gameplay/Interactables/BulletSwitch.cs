@@ -14,11 +14,14 @@ public class BulletSwitch : MonoBehaviour
     [SerializeField] private bool autoDeactivateAfterCountdown = false;
     [SerializeField] private float deactivateDelay = 3f;
 
+    [Header("Boop Trigger")]
+    [SerializeField] private bool allowBoopTrigger = true;
+
     public bool IsActivated { get; private set; }
 
-    private int lastToggleFrame = -1;
-    private float lastToggleTime = -999f;
-    private float deactivateTimer = -1f;
+    private int lastToggleFrame = -9999;
+    private float lastToggleTime = -9999f;
+    private float deactivateClock = 0f;
 
     void Awake()
     {
@@ -27,58 +30,80 @@ public class BulletSwitch : MonoBehaviour
 
     void Update()
     {
-        if (autoDeactivateAfterCountdown && IsActivated && deactivateTimer > 0f)
+        if (autoDeactivateAfterCountdown && IsActivated)
         {
-            deactivateTimer -= Time.deltaTime;
-            if (deactivateTimer <= 0f)
+            if (deactivateClock > 0f)
             {
-                IsActivated = false;
-                RefreshColor();
+                deactivateClock -= Time.deltaTime;
+                if (deactivateClock <= 0f)
+                {
+                    SetActivated(false);
+                }
             }
         }
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.TryGetComponent<Projectile>(out _)) return;
+        if (other == null || other.gameObject == null) return;
+        string t = other.tag;
+
+        if (!string.IsNullOrEmpty(activateTag) && t == activateTag)
+        {
+            TryToggleOrActivate(true);
+        }
+        else if (!string.IsNullOrEmpty(deactivateTag) && t == deactivateTag)
+        {
+            TryToggleOrActivate(false);
+        }
+    }
+
+    public void ActivateByBoop()
+    {
+        if (!allowBoopTrigger) return;
+        TryToggleOrActivate(true);
+    }
+
+    public void DeactivateExtern()
+    {
+        SetActivated(false);
+    }
+
+    public void ActivateExtern()
+    {
+        SetActivated(true);
+    }
+
+    private void TryToggleOrActivate(bool isActivate)
+    {
         if (Time.frameCount == lastToggleFrame) return;
         if (Time.time - lastToggleTime < retriggerCooldown) return;
 
-        bool matchedActivate = !string.IsNullOrEmpty(activateTag) && other.CompareTag(activateTag);
-        bool matchedDeactivate = !string.IsNullOrEmpty(deactivateTag) && other.CompareTag(deactivateTag);
-
         if (toggleable)
         {
-            if (matchedActivate || matchedDeactivate)
-            {
-                IsActivated = !IsActivated;
-            }
-            else
-            {
-                return;
-            }
+            SetActivated(!IsActivated);
         }
         else
         {
-            if (matchedActivate)
-            {
-                if (IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
-                IsActivated = true;
-
-                if (autoDeactivateAfterCountdown)
-                    deactivateTimer = deactivateDelay;
-            }
-            else if (matchedDeactivate)
-            {
-                if (!IsActivated) { lastToggleFrame = Time.frameCount; lastToggleTime = Time.time; return; }
-                IsActivated = false;
-                deactivateTimer = -1f;
-            }
-            else
-            {
-                return;
-            }
+            if (isActivate) SetActivated(true);
+            else SetActivated(false);
         }
+    }
+
+    private void SetActivated(bool v)
+    {
+        if (IsActivated == v)
+        {
+            lastToggleFrame = Time.frameCount;
+            lastToggleTime = Time.time;
+            if (IsActivated && autoDeactivateAfterCountdown) deactivateClock = deactivateDelay;
+            RefreshColor();
+            return;
+        }
+
+        IsActivated = v;
+
+        if (IsActivated && autoDeactivateAfterCountdown) deactivateClock = deactivateDelay;
 
         lastToggleFrame = Time.frameCount;
         lastToggleTime = Time.time;

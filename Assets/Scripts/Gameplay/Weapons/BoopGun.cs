@@ -121,6 +121,12 @@ public class BoopGun : MonoBehaviour
 
             Vector2 dir = ((Vector2)root.position - (Vector2)firePoint.position).normalized;
 
+            var sw = col.GetComponentInParent<BulletSwitch>();
+            if (sw != null)
+            {
+                sw.ActivateByBoop();
+            }
+
             if (col.TryGetComponent<IDamageable>(out var dmg))
             {
                 dmg.ApplyDamage(new DamageInfo(damage, DamageType.Normal, owner));
