@@ -21,6 +21,12 @@ public class ElectricGun : MonoBehaviour
     private bool isOnCooldown;
     private float cooldownRemain;
     private ParticleSystem chargeInstance;
+    private Vector2 aimDir = Vector2.right;
+
+    public void SetAimDirection(Vector2 dir)
+    {
+        if (dir.sqrMagnitude > 1e-6f) aimDir = dir.normalized;
+    }
 
     public void BeginCharge()
     {
@@ -31,7 +37,8 @@ public class ElectricGun : MonoBehaviour
         chargeT = 0f;
         if (chargeParticlesPrefab != null)
         {
-            chargeInstance = Instantiate(chargeParticlesPrefab, firePoint.position, firePoint.rotation, firePoint);
+            chargeInstance = Instantiate(chargeParticlesPrefab, firePoint.position, Quaternion.identity, firePoint);
+            chargeInstance.transform.right = aimDir;
             var main = chargeInstance.main;
             main.loop = true;
             chargeInstance.Play();
@@ -46,7 +53,7 @@ public class ElectricGun : MonoBehaviour
         if (chargeInstance != null)
         {
             chargeInstance.transform.position = firePoint.position;
-            chargeInstance.transform.rotation = firePoint.rotation;
+            chargeInstance.transform.right = aimDir;
         }
     }
 
@@ -73,7 +80,7 @@ public class ElectricGun : MonoBehaviour
 
         if (weapon != null)
         {
-            if (weapon.TryFireReturnProjectile(firePoint.right, out var proj, out var go))
+            if (weapon.TryFireReturnProjectile(aimDir, out var proj, out var go))
             {
                 if (proj != null)
                 {
@@ -89,10 +96,10 @@ public class ElectricGun : MonoBehaviour
 
         if (releaseParticlesPrefab != null)
         {
-            var ps = Instantiate(releaseParticlesPrefab, firePoint.position, firePoint.rotation);
+            var ps = Instantiate(releaseParticlesPrefab, firePoint.position, Quaternion.identity);
             var main = ps.main;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            ps.transform.right = firePoint.right;
+            ps.transform.right = aimDir;
             ps.transform.parent = null;
             ps.Play();
         }
@@ -130,5 +137,14 @@ public class ElectricGun : MonoBehaviour
         }
         cooldownRemain = 0f;
         isOnCooldown = false;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (firePoint == null) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(firePoint.position, 0.08f);
+        Vector3 forward = aimDir.sqrMagnitude > 1e-6f ? (Vector3)aimDir.normalized : Vector3.right;
+        Gizmos.DrawLine(firePoint.position, firePoint.position + forward * 3f);
     }
 }

@@ -2,90 +2,100 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float jumpForce = 10f;
-    private Rigidbody2D rb;
-    private bool facingRight = true;
+    [Header("Refs")]
+    public Rigidbody2D rb;
+    public CapsuleCollider2D capsule;
 
-    [Header("Flip Settings")]
-    public Transform graphics;
-    public Transform[] flipChildren;
+    [Header("Move")]
+    public float moveSpeed = 6f;
+    public float acceleration = 60f;
+    public float deceleration = 80f;
+    public float airControl = 0.6f;
 
-    [Header("Ground Check Settings")]
-    public Transform groundCheck;
-    public float groundCheckRadius = 0.2f;
-    public LayerMask groundLayer;
-    [SerializeField] private bool isGrounded;
+    [Header("Jump")]
+    public LayerMask groundMask;
+    public float jumpForce = 12f;
+    public float coyoteTime = 0.1f;
+    public float jumpBuffer = 0.1f;
 
-    void Start()
+    [Header("Recoil")]
+    public float recoilDamping = 8f;
+
+    private float inputX;
+    private bool grounded;
+    private float lastGroundedTime;
+    private float lastJumpPressTime;
+    private bool wantJump;
+    private Vector2 externalVelocity;
+
+    void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (capsule == null) capsule = GetComponent<CapsuleCollider2D>();
+        lastJumpPressTime = -999f;
+        lastGroundedTime = -999f;
+        externalVelocity = Vector2.zero;
     }
 
     void Update()
     {
-        float moveInput = Input.GetAxisRaw("Horizontal");
-        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
+        inputX = Input.GetAxisRaw("Horizontal");
+        if (Input.GetButtonDown("Jump")) lastJumpPressTime = Time.time;
 
-        isGrounded = IsGrounded();
-
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (IsGrounded())
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            grounded = true;
+            lastGroundedTime = Time.time;
+        }
+        else
+        {
+            grounded = false;
         }
 
-        UpdateFacingByMouse();
+        bool pressedRecently = Time.time - lastJumpPressTime <= jumpBuffer && lastJumpPressTime > -900f;
+        bool canCoyote = Time.time - lastGroundedTime <= coyoteTime;
+        wantJump = pressedRecently && canCoyote;
+    }
+
+    void FixedUpdate()
+    {
+        float target = inputX * moveSpeed;
+        float accel = Mathf.Abs(target) > 0.01f ? acceleration : deceleration;
+        float ctrl = grounded ? 1f : airControl;
+        float vx = Mathf.MoveTowards(rb.linearVelocity.x, target, accel * ctrl * Time.fixedDeltaTime);
+        float vy = rb.linearVelocity.y;
+
+        if (wantJump)
+        {
+            vy = jumpForce;
+            wantJump = false;
+            lastJumpPressTime = -999f;
+            lastGroundedTime = -999f;
+        }
+
+        rb.linearVelocity = new Vector2(vx, vy);
+
+        if (externalVelocity.sqrMagnitude > 0.000001f)
+        {
+            rb.linearVelocity += externalVelocity;
+            float k = 1f - Mathf.Exp(-recoilDamping * Time.fixedDeltaTime);
+            externalVelocity = Vector2.Lerp(externalVelocity, Vector2.zero, k);
+            if (externalVelocity.sqrMagnitude < 0.00001f) externalVelocity = Vector2.zero;
+        }
+    }
+
+    public void AddRecoil(Vector2 velocityDelta)
+    {
+        externalVelocity += velocityDelta;
     }
 
     private bool IsGrounded()
     {
-        return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-    }
-
-    private void UpdateFacingByMouse()
-    {
-        if (Camera.main == null) return;
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        bool shouldFaceRight = mouseWorld.x >= transform.position.x;
-        if (shouldFaceRight != facingRight)
-        {
-            Flip();
-        }
-    }
-
-    private void Flip()
-    {
-        facingRight = !facingRight;
-
-        if (graphics != null)
-        {
-            Vector3 scale = graphics.localScale;
-            scale.x *= -1;
-            graphics.localScale = scale;
-        }
-
-        if (flipChildren != null && flipChildren.Length > 0)
-        {
-            foreach (Transform child in flipChildren)
-            {
-                Vector3 scale = child.localScale;
-                scale.x *= -1;
-                child.localScale = scale;
-            }
-        }
-    }
-
-    public bool IsFacingRight()
-    {
-        return facingRight;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
+        if (capsule == null) return false;
+        Vector2 p = (Vector2)transform.position + capsule.offset;
+        Vector2 size = capsule.size;
+        float extra = 0.05f;
+        RaycastHit2D hit = Physics2D.BoxCast(p + Vector2.down * (size.y * 0.5f - extra * 0.5f), new Vector2(size.x * 0.9f, extra), 0f, Vector2.down, 0f, groundMask);
+        return hit.collider != null;
     }
 }

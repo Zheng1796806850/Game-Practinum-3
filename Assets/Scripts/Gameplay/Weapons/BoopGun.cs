@@ -12,11 +12,11 @@ public class BoopGun : MonoBehaviour
     public float sectorAngleDeg = 80f;
     public float damage = 1f;
     public float pushImpulse = 12f;
+    public float recoilVelocity = 5f;
     public LayerMask hitMask;
     public ParticleSystem shootParticles;
     public bool allowMultipleHitsPerFire = true;
 
-    [Header("Generator Proxy Projectile")]
     public bool spawnGeneratorProxyProjectile = true;
     public GameObject generatorProxyProjectilePrefab;
     public LayerMask generatorMask;
@@ -25,6 +25,12 @@ public class BoopGun : MonoBehaviour
     private bool isWinding;
     private bool isOnCooldown;
     private float cooldownRemain;
+    private Vector2 aimDir = Vector2.right;
+
+    public void SetAimDirection(Vector2 dir)
+    {
+        if (dir.sqrMagnitude > 1e-6f) aimDir = dir.normalized;
+    }
 
     public bool CanStartWindup()
     {
@@ -42,7 +48,7 @@ public class BoopGun : MonoBehaviour
 
     public void FireBoop()
     {
-        if (firePoint == null || owner == null) return;
+        if (firePoint == null) return;
         if (!CanStartWindup()) return;
         StartCoroutine(WindupThenBoop());
     }
@@ -78,10 +84,10 @@ public class BoopGun : MonoBehaviour
     {
         if (shootParticles != null && firePoint != null)
         {
-            var ps = Instantiate(shootParticles, firePoint.position, firePoint.rotation);
+            var ps = Instantiate(shootParticles, firePoint.position, Quaternion.identity);
             var main = ps.main;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            ps.transform.right = firePoint.right;
+            ps.transform.right = aimDir;
             ps.transform.parent = null;
             ps.Play();
         }
@@ -113,7 +119,7 @@ public class BoopGun : MonoBehaviour
                 processed.Add(root);
             }
 
-            Vector2 dir = (root.position - firePoint.position).normalized;
+            Vector2 dir = ((Vector2)root.position - (Vector2)firePoint.position).normalized;
 
             if (col.TryGetComponent<IDamageable>(out var dmg))
             {
@@ -126,6 +132,12 @@ public class BoopGun : MonoBehaviour
             }
         }
 
+        if (owner != null)
+        {
+            var pc = owner.GetComponentInParent<PlayerController>();
+            if (pc != null) pc.AddRecoil(-aimDir * recoilVelocity);
+        }
+
         if (spawnGeneratorProxyProjectile && generatorProxyProjectilePrefab != null)
         {
             Collider2D[] gens = Physics2D.OverlapCircleAll(firePoint.position, sectorRadius, generatorMask);
@@ -134,10 +146,10 @@ public class BoopGun : MonoBehaviour
                 var g = gens[i];
                 if (!IsInsideSector(g.bounds.ClosestPoint(firePoint.position))) continue;
                 var go = Instantiate(generatorProxyProjectilePrefab, firePoint.position, Quaternion.identity);
-                var rb = go.GetComponent<Rigidbody2D>();
+                var rbp = go.GetComponent<Rigidbody2D>();
                 var proj = go.GetComponent<Projectile>();
                 Vector2 dir = ((Vector2)g.bounds.ClosestPoint(firePoint.position) - (Vector2)firePoint.position).normalized;
-                if (rb != null) rb.linearVelocity = dir * generatorProxySpeed;
+                if (rbp != null) rbp.linearVelocity = dir * generatorProxySpeed;
                 if (proj != null) proj.Init(owner, 0f, dir * generatorProxySpeed);
             }
         }
@@ -145,10 +157,9 @@ public class BoopGun : MonoBehaviour
 
     private bool IsInsideSector(Vector2 point)
     {
-        Vector2 fwd = firePoint.right;
-        Vector2 to = (point - (Vector2)firePoint.position);
+        Vector2 to = point - (Vector2)firePoint.position;
         if (to.sqrMagnitude < 0.0001f) return true;
-        float ang = Vector2.Angle(fwd, to);
+        float ang = Vector2.Angle(aimDir, to);
         return ang <= sectorAngleDeg * 0.5f;
     }
 
@@ -156,8 +167,9 @@ public class BoopGun : MonoBehaviour
     {
         if (firePoint == null) return;
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(firePoint.position, sectorRadius);
-        Vector3 forward = firePoint.right;
+        Gizmos.DrawWireSphere(firePoint.position, 0.08f);
+        Vector3 forward = aimDir.sqrMagnitude > 1e-6f ? (Vector3)aimDir.normalized : Vector3.right;
+        Gizmos.DrawLine(firePoint.position, firePoint.position + forward * sectorRadius);
         float half = sectorAngleDeg * 0.5f;
         Quaternion q1 = Quaternion.AngleAxis(half, Vector3.forward);
         Quaternion q2 = Quaternion.AngleAxis(-half, Vector3.forward);

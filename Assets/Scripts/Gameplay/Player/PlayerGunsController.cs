@@ -8,7 +8,14 @@ public class PlayerGunsController : MonoBehaviour
     public KeyCode switchKey = KeyCode.Q;
     public string fireAxis = "Fire1";
     public Transform weaponPivot;
+    public Transform sharedFirePoint;
+    public float firePointDistance = 0.4f;
     public BulletUI bulletUI;
+
+    [Header("Visual Flip")]
+    public bool flipSpriteByAim = true;
+    public bool invertFlipX = false;
+    public SpriteRenderer[] spritesToFlip;
 
     [Header("Boop")]
     public BoopGun boopGun;
@@ -20,9 +27,30 @@ public class PlayerGunsController : MonoBehaviour
     [Header("Electric")]
     public ElectricGun electricGun;
 
+    private PlayerController playerController;
+
     void Start()
     {
         if (weaponPivot == null) weaponPivot = transform;
+        playerController = GetComponentInParent<PlayerController>();
+
+        if (boopGun != null)
+        {
+            boopGun.owner = gameObject;
+            if (boopGun.firePoint == null && sharedFirePoint != null) boopGun.firePoint = sharedFirePoint;
+        }
+        if (electricGun != null)
+        {
+            electricGun.owner = gameObject;
+            if (electricGun.firePoint == null && sharedFirePoint != null) electricGun.firePoint = sharedFirePoint;
+        }
+
+        if (sharedFirePoint != null && weaponPivot != null && firePointDistance <= 0.001f)
+        {
+            firePointDistance = Vector2.Distance(sharedFirePoint.position, weaponPivot.position);
+            if (firePointDistance < 0.05f) firePointDistance = 0.4f;
+        }
+
         boopBarCurrent = 0f;
         if (bulletUI != null)
         {
@@ -42,15 +70,15 @@ public class PlayerGunsController : MonoBehaviour
 
     void Update()
     {
-        AimGunToMouse();
+        Vector2 aimDir = GetMouseDirFromPivot();
+        ApplyPivotAndFirePoint(aimDir);
+        ApplySpriteFlip(aimDir);
 
-        if (Input.GetKeyDown(switchKey))
-        {
-            ToggleMode();
-        }
+        if (Input.GetKeyDown(switchKey)) ToggleMode();
 
         if (mode == GunMode.Boop)
         {
+            if (boopGun != null) boopGun.SetAimDirection(aimDir);
             RegenerateBoopBar();
             if (Input.GetButtonDown(fireAxis))
             {
@@ -62,18 +90,12 @@ public class PlayerGunsController : MonoBehaviour
                     if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
                 }
             }
-            if (bulletUI != null)
-            {
-                float v = boopGun != null ? boopGun.CooldownWheel01 : 0f;
-                bulletUI.UpdateCooldown01(v);
-            }
+            if (bulletUI != null) bulletUI.UpdateCooldown01(boopGun != null ? boopGun.CooldownWheel01 : 0f);
         }
         else
         {
-            if (Input.GetButtonDown(fireAxis))
-            {
-                if (electricGun != null) electricGun.BeginCharge();
-            }
+            if (electricGun != null) electricGun.SetAimDirection(aimDir);
+            if (Input.GetButtonDown(fireAxis)) if (electricGun != null) electricGun.BeginCharge();
             if (Input.GetButton(fireAxis))
             {
                 if (electricGun != null) electricGun.HoldCharge(Time.deltaTime);
@@ -84,11 +106,7 @@ public class PlayerGunsController : MonoBehaviour
                 if (electricGun != null) electricGun.ReleaseAndFire();
                 if (bulletUI != null) bulletUI.UpdateElectricBar01(0f);
             }
-            if (bulletUI != null)
-            {
-                float v = electricGun != null ? electricGun.CooldownWheel01 : 0f;
-                bulletUI.UpdateCooldown01(v);
-            }
+            if (bulletUI != null) bulletUI.UpdateCooldown01(electricGun != null ? electricGun.CooldownWheel01 : 0f);
         }
     }
 
@@ -128,20 +146,40 @@ public class PlayerGunsController : MonoBehaviour
         }
     }
 
-    private void AimGunToMouse()
+    private Vector2 GetMouseDirFromPivot()
     {
-        if (weaponPivot == null) return;
-        if (Camera.main == null) return;
-
+        if (Camera.main == null || weaponPivot == null) return Vector2.right;
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mouseWorld.z = weaponPivot.position.z;
+        Vector2 dir = (mouseWorld - weaponPivot.position);
+        if (dir.sqrMagnitude < 0.0001f) return Vector2.right;
+        return dir.normalized;
+    }
 
-        Vector2 dir = (mouseWorld - weaponPivot.position).normalized;
-        if (dir.sqrMagnitude < 0.0001f) return;
+    private void ApplyPivotAndFirePoint(Vector2 dir)
+    {
+        if (weaponPivot != null) weaponPivot.right = dir;
+        if (sharedFirePoint != null && weaponPivot != null)
+        {
+            sharedFirePoint.position = weaponPivot.position + (Vector3)(dir * firePointDistance);
+            sharedFirePoint.right = dir;
+        }
+    }
 
-        if (weaponPivot.lossyScale.x < 0f)
-            dir = -dir;
+    private void ApplySpriteFlip(Vector2 dir)
+    {
+        if (!flipSpriteByAim || spritesToFlip == null) return;
+        bool flip = dir.x < 0f;
+        if (invertFlipX) flip = !flip;
+        for (int i = 0; i < spritesToFlip.Length; i++)
+        {
+            var sr = spritesToFlip[i];
+            if (sr != null) sr.flipX = flip;
+        }
+    }
 
-        weaponPivot.right = dir;
+    public void AddRecoilToPlayer(Vector2 v)
+    {
+        if (playerController != null) playerController.AddRecoil(v);
     }
 }

@@ -4904,22 +4904,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -3993294038262999917, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: shootParticles
-      value: 
-      objectReference: {fileID: 1409653619418374098, guid: ebed29d56c68fa64285b31c01c2b0049, type: 3}
-    - target: {fileID: -3993294038262999917, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: generatorMask.m_Bits
-      value: 512
-      objectReference: {fileID: 0}
-    - target: {fileID: -3993294038262999917, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: generatorProxyProjectilePrefab
-      value: 
-      objectReference: {fileID: 5726331413828171566, guid: a77a2fc97b62d6245b6aa3bdaf000c78, type: 3}
     - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: boopGun
       value: 
-      objectReference: {fileID: 1907647242}
+      objectReference: {fileID: 1702296937}
     - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: bulletUI
       value: 
@@ -4927,14 +4915,30 @@ PrefabInstance:
     - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: electricGun
       value: 
-      objectReference: {fileID: 1907647241}
+      objectReference: {fileID: 1702296936}
     - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: weaponPivot
       value: 
       objectReference: {fileID: 422186533}
+    - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: sharedFirePoint
+      value: 
+      objectReference: {fileID: 422186534}
+    - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: spritesToFlip.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1998274075815931191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: 'spritesToFlip.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1702296935}
+    - target: {fileID: 2031078734043402749, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: bb60c3ce1c906b94dba93b0e3fc2bd2b, type: 2}
     - target: {fileID: 3403806881188929036, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.2
+      value: -0.309
       objectReference: {fileID: 0}
     - target: {fileID: 3455659926765781813, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_AnchorMax.x
@@ -4984,10 +4988,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3984966863784340801, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.12
-      objectReference: {fileID: 0}
     - target: {fileID: 4674403223554948003, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -5000,43 +5000,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: owner
+    - target: {fileID: 6398408641415069543, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: deathMenu
       value: 
-      objectReference: {fileID: 422186536}
-    - target: {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: weapon
+      objectReference: {fileID: 79835344}
+    - target: {fileID: 6400681590919722272, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: rb
       value: 
-      objectReference: {fileID: 422186535}
-    - target: {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: firePoint
+      objectReference: {fileID: 1702296934}
+    - target: {fileID: 6400681590919722272, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: capsule
       value: 
-      objectReference: {fileID: 422186534}
-    - target: {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: chargeParticles
-      value: 
-      objectReference: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
-    - target: {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: releaseParticles
-      value: 
-      objectReference: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
-    - target: {fileID: 8242508782343590631, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-      propertyPath: bulletPrefab
-      value: 
-      objectReference: {fileID: 5726331413828171566, guid: 0533a8380ffe9ab4bbdfbde7b71285c0, type: 3}
+      objectReference: {fileID: 1702296933}
+    - target: {fileID: 6400681590919722272, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: groundMask.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     m_RemovedComponents:
-    - {fileID: 1682504816549230642, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-    - {fileID: -3993294038262999917, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-    - {fileID: 6474191712209411752, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+    - {fileID: 7997916310937749191, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+    - {fileID: 2265185230201889218, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3538627369450455209, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 6179979184917067807, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1907647242}
-    - targetCorrespondingSourceObject: {fileID: 3538627369450455209, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      addedObject: {fileID: 1702296937}
+    - targetCorrespondingSourceObject: {fileID: 6179979184917067807, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1907647241}
+      addedObject: {fileID: 1702296936}
   m_SourcePrefab: {fileID: 100100000, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
 --- !u!4 &422186533 stripped
 Transform:
@@ -19944,6 +19935,77 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3698339977001980514, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
   m_PrefabInstance: {fileID: 422186532}
   m_PrefabAsset: {fileID: 0}
+--- !u!70 &1702296933 stripped
+CapsuleCollider2D:
+  m_CorrespondingSourceObject: {fileID: 2244385824934481141, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+  m_PrefabInstance: {fileID: 422186532}
+  m_PrefabAsset: {fileID: 0}
+--- !u!50 &1702296934 stripped
+Rigidbody2D:
+  m_CorrespondingSourceObject: {fileID: 2031078734043402749, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+  m_PrefabInstance: {fileID: 422186532}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &1702296935 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 237881959373765335, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+  m_PrefabInstance: {fileID: 422186532}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1702296936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 422186536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db1875a05c8a934499c094faf3742a12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weapon: {fileID: 422186535}
+  firePoint: {fileID: 422186534}
+  owner: {fileID: 422186536}
+  maxChargeTime: 5
+  cooldown: 2
+  fullFreezeDuration: 4
+  halfFreezeDuration: 2
+  bonusDamageIfFrozen: 0
+  generatorFullChargePercent: 100
+  generatorHalfChargePercent: 50
+  chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
+  releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
+--- !u!114 &1702296937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 422186536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c55a67aec628f41b6a665b31d55606, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firePoint: {fileID: 422186534}
+  owner: {fileID: 422186536}
+  windupTime: 1
+  cooldown: 1.2
+  sectorRadius: 3.5
+  sectorAngleDeg: 60
+  damage: 1
+  pushImpulse: 12
+  recoilVelocity: 2.5
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 320
+  shootParticles: {fileID: 1409653619418374098, guid: ebed29d56c68fa64285b31c01c2b0049, type: 3}
+  allowMultipleHitsPerFire: 1
+  spawnGeneratorProxyProjectile: 1
+  generatorProxyProjectilePrefab: {fileID: 5726331413828171566, guid: a77a2fc97b62d6245b6aa3bdaf000c78, type: 3}
+  generatorMask:
+    serializedVersion: 2
+    m_Bits: 512
+  generatorProxySpeed: 20
 --- !u!1001 &1709463926
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -21705,66 +21767,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 61e3182ccc0e8004d8701813d3f35aa0, type: 3}
---- !u!1 &1907647239 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3538627369450455209, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
-  m_PrefabInstance: {fileID: 422186532}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1907647241
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1907647239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db1875a05c8a934499c094faf3742a12, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weapon: {fileID: 422186535}
-  firePoint: {fileID: 422186534}
-  owner: {fileID: 422186536}
-  maxChargeTime: 5
-  cooldown: 2
-  fullFreezeDuration: 4
-  halfFreezeDuration: 2
-  bonusDamageIfFrozen: 0
-  generatorFullChargePercent: 100
-  generatorHalfChargePercent: 50
-  chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
-  releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
---- !u!114 &1907647242
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1907647239}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5c55a67aec628f41b6a665b31d55606, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  firePoint: {fileID: 422186534}
-  owner: {fileID: 422186536}
-  windupTime: 1
-  cooldown: 1.2
-  sectorRadius: 3.5
-  sectorAngleDeg: 60
-  damage: 1
-  pushImpulse: 12
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 320
-  shootParticles: {fileID: 1409653619418374098, guid: ebed29d56c68fa64285b31c01c2b0049, type: 3}
-  allowMultipleHitsPerFire: 1
-  spawnGeneratorProxyProjectile: 1
-  generatorProxyProjectilePrefab: {fileID: 5726331413828171566, guid: a77a2fc97b62d6245b6aa3bdaf000c78, type: 3}
-  generatorMask:
-    serializedVersion: 2
-    m_Bits: 512
-  generatorProxySpeed: 20
 --- !u!1 &1920368485
 GameObject:
   m_ObjectHideFlags: 0
