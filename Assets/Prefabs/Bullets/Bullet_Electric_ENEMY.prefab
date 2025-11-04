@@ -180,4 +180,4 @@ MonoBehaviour:
   bonusDamageIfTargetFrozen: 0
   onHitParticlePrefab: {fileID: 0}
   limitDamageToTag: 1
-  damageOnlyTag: Player
+  damageOnlyTag: 

@@ -761,6 +761,8 @@ MonoBehaviour:
   faceTarget: 1
   ignoreFreezeForShooting: 1
   resetChargeOnFreeze: 1
+  shootForwardWhenFrozen: 1
+  frozenChargeDuration: 2
   overrideBulletSpeed: 1
   bulletSpeed: 12
   overrideBulletDamage: 1

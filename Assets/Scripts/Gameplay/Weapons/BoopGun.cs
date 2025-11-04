@@ -22,10 +22,44 @@ public class BoopGun : MonoBehaviour
     public LayerMask generatorMask;
     public float generatorProxySpeed = 20f;
 
+    [Header("Audio")]
+    public AudioClip chargeClip;
+    public AudioClip fireClip;
+    [Range(0f, 1f)] public float chargeVolume = 1f;
+    [Range(0f, 1f)] public float fireVolume = 1f;
+
+    [Header("Recoil")]
+    [Range(0f, 1f)] public float verticalRecoilMultiplier = 0.5f;
+
     private bool isWinding;
     private bool isOnCooldown;
     private float cooldownRemain;
     private Vector2 aimDir = Vector2.right;
+    private AudioSource chargeAudio;
+    private AudioSource fireAudio;
+
+    void Awake()
+    {
+        if (chargeAudio == null)
+        {
+            chargeAudio = gameObject.AddComponent<AudioSource>();
+            chargeAudio.playOnAwake = false;
+            chargeAudio.loop = true;
+            chargeAudio.spatialBlend = 0f;
+        }
+        if (fireAudio == null)
+        {
+            fireAudio = gameObject.AddComponent<AudioSource>();
+            fireAudio.playOnAwake = false;
+            fireAudio.loop = false;
+            fireAudio.spatialBlend = 0f;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
+    }
 
     public void SetAimDirection(Vector2 dir)
     {
@@ -56,12 +90,23 @@ public class BoopGun : MonoBehaviour
     private IEnumerator WindupThenBoop()
     {
         isWinding = true;
+        if (chargeClip != null && chargeAudio != null)
+        {
+            chargeAudio.clip = chargeClip;
+            chargeAudio.volume = chargeVolume;
+            chargeAudio.loop = true;
+            chargeAudio.Play();
+        }
+
         float t = 0f;
         while (t < windupTime)
         {
             t += Time.deltaTime;
             yield return null;
         }
+
+        if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
+
         isWinding = false;
         DoBoop();
         StartCoroutine(CooldownTimer());
@@ -90,6 +135,12 @@ public class BoopGun : MonoBehaviour
             ps.transform.right = aimDir;
             ps.transform.parent = null;
             ps.Play();
+        }
+
+        if (fireClip != null && fireAudio != null)
+        {
+            fireAudio.volume = fireVolume;
+            fireAudio.PlayOneShot(fireClip, fireVolume);
         }
 
         List<Collider2D> results = new List<Collider2D>();
@@ -141,7 +192,12 @@ public class BoopGun : MonoBehaviour
         if (owner != null)
         {
             var pc = owner.GetComponentInParent<PlayerController>();
-            if (pc != null) pc.AddRecoil(-aimDir * recoilVelocity);
+            if (pc != null)
+            {
+                Vector2 recoil = -aimDir * recoilVelocity;
+                recoil.y *= verticalRecoilMultiplier;
+                pc.AddRecoil(recoil);
+            }
         }
 
         if (spawnGeneratorProxyProjectile && generatorProxyProjectilePrefab != null)

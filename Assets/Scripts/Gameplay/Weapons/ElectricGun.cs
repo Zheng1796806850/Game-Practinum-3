@@ -15,12 +15,43 @@ public class ElectricGun : MonoBehaviour
     public ParticleSystem chargeParticlesPrefab;
     public ParticleSystem releaseParticlesPrefab;
 
+    [Header("Audio")]
+    public AudioClip chargeLoopClip;
+    public AudioClip fireClip;
+    [Range(0f, 1f)] public float chargeVolume = 1f;
+    [Range(0f, 1f)] public float fireVolume = 1f;
+
     private bool isCharging;
     private float chargeT;
     private bool isOnCooldown;
     private float cooldownRemain;
     private ParticleSystem chargeInstance;
     private Vector2 aimDir = Vector2.right;
+    private AudioSource chargeAudio;
+    private AudioSource fireAudio;
+
+    void Awake()
+    {
+        if (chargeAudio == null)
+        {
+            chargeAudio = gameObject.AddComponent<AudioSource>();
+            chargeAudio.playOnAwake = false;
+            chargeAudio.loop = true;
+            chargeAudio.spatialBlend = 0f;
+        }
+        if (fireAudio == null)
+        {
+            fireAudio = gameObject.AddComponent<AudioSource>();
+            fireAudio.playOnAwake = false;
+            fireAudio.loop = false;
+            fireAudio.spatialBlend = 0f;
+        }
+    }
+
+    void OnDisable()
+    {
+        if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
+    }
 
     public float Charge01
     {
@@ -53,6 +84,15 @@ public class ElectricGun : MonoBehaviour
         if (isCharging) return;
         isCharging = true;
         chargeT = 0f;
+
+        if (chargeLoopClip != null && chargeAudio != null)
+        {
+            chargeAudio.clip = chargeLoopClip;
+            chargeAudio.volume = chargeVolume;
+            chargeAudio.loop = true;
+            chargeAudio.Play();
+        }
+
         if (chargeParticlesPrefab != null)
         {
             chargeInstance = Instantiate(chargeParticlesPrefab, firePoint.position, Quaternion.identity);
@@ -68,7 +108,12 @@ public class ElectricGun : MonoBehaviour
     {
         if (!isCharging) return;
         chargeT += Mathf.Max(0f, dt);
-        if (chargeT > maxChargeTime) chargeT = maxChargeTime;
+        if (chargeT >= maxChargeTime)
+        {
+            chargeT = maxChargeTime;
+            ReleaseAndFire();
+            return;
+        }
         if (chargeInstance != null && firePoint != null)
         {
             chargeInstance.transform.position = firePoint.position;
@@ -80,6 +125,9 @@ public class ElectricGun : MonoBehaviour
     {
         if (!isCharging) return;
         float k = Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime));
+
+        if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
+
         if (chargeInstance != null)
         {
             Destroy(chargeInstance.gameObject);
@@ -123,6 +171,12 @@ public class ElectricGun : MonoBehaviour
             ps.transform.right = aimDir;
             ps.transform.parent = null;
             ps.Play();
+        }
+
+        if (fireClip != null && fireAudio != null)
+        {
+            fireAudio.volume = fireVolume;
+            fireAudio.PlayOneShot(fireClip, fireVolume);
         }
 
         isCharging = false;

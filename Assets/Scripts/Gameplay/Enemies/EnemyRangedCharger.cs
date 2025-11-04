@@ -49,6 +49,10 @@ public class EnemyRangedCharger : MonoBehaviour
     public bool ignoreFreezeForShooting = false;
     public bool resetChargeOnFreeze = true;
 
+    [Header("Frozen Shooting Override")]
+    public bool shootForwardWhenFrozen = true;
+    public float frozenChargeDuration = 0.8f;
+
     [Header("Projectile & Damage")]
     public bool overrideBulletSpeed = false;
     public float bulletSpeed = 12f;
@@ -99,12 +103,44 @@ public class EnemyRangedCharger : MonoBehaviour
     {
         blockedThisFrame = false;
 
-        if (health != null && health.IsFrozen && !ignoreFreezeForShooting)
+        if (health != null && health.IsFrozen)
         {
             ApplyHorizontalControl(0f);
-            StopChargingParticles();
-            charging = false;
-            return;
+
+            if (shootForwardWhenFrozen)
+            {
+                if (!charging)
+                {
+                    charging = true;
+                    chargeTimer = Mathf.Max(0.0001f, frozenChargeDuration);
+                    StartChargingParticles();
+                }
+                else
+                {
+                    chargeTimer -= Time.deltaTime;
+                    if (chargeTimer <= 0f)
+                    {
+                        Vector2 dir = facingRight ? Vector2.right : Vector2.left;
+                        FireFullChargeDir(dir);
+                        charging = false;
+                        chargeTimer = 0f;
+                        StopChargingParticles();
+                    }
+                    else
+                    {
+                        UpdateChargingParticles();
+                    }
+                }
+
+                return;
+            }
+
+            if (!ignoreFreezeForShooting)
+            {
+                StopChargingParticles();
+                charging = false;
+                return;
+            }
         }
 
         if (player == null)
@@ -134,13 +170,6 @@ public class EnemyRangedCharger : MonoBehaviour
         }
 
         ApplyHorizontalControl(0f);
-
-        if (health != null && health.IsFrozen && !ignoreFreezeForShooting)
-        {
-            StopChargingParticles();
-            charging = false;
-            return;
-        }
 
         if (!charging)
         {
@@ -278,6 +307,15 @@ public class EnemyRangedCharger : MonoBehaviour
         if (player != null) dir = ((Vector2)player.position - (Vector2)fp).normalized;
         else dir = facingRight ? Vector2.right : Vector2.left;
 
+        FireFullChargeDir(dir);
+    }
+
+    private void FireFullChargeDir(Vector2 dir)
+    {
+        if (weapon == null || weapon.bulletPrefab == null) return;
+
+        Vector3 fp = weapon.firePoint != null ? weapon.firePoint.position : transform.position;
+
         GameObject bullet = Object.Instantiate(weapon.bulletPrefab, fp, Quaternion.identity);
         if (!string.IsNullOrEmpty(bulletTagForSwitch)) bullet.tag = bulletTagForSwitch;
 
@@ -285,13 +323,13 @@ public class EnemyRangedCharger : MonoBehaviour
         float dmg = overrideBulletDamage ? bulletDamage : weapon.damage;
 
         var rb2 = bullet.GetComponent<Rigidbody2D>();
-        if (rb2 != null) rb2.linearVelocity = dir * spd;
+        if (rb2 != null) rb2.linearVelocity = dir.normalized * spd;
 
         var proj = bullet.GetComponent<Projectile>();
         if (proj != null)
         {
             proj.projectileType = Projectile.ProjectileType.Ice;
-            proj.Init(weapon.owner != null ? weapon.owner : gameObject, dmg, dir * spd);
+            proj.Init(weapon.owner != null ? weapon.owner : gameObject, dmg, dir.normalized * spd);
         }
 
         var payload = bullet.GetComponent<GeneratorChargePayload>();
