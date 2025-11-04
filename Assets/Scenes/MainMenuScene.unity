@@ -686,7 +686,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -7.797}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 37.65435, y: -613.6779}
+  m_AnchoredPosition: {x: 32.67874, y: -617.8043}
   m_SizeDelta: {x: 400, y: 130}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &415002466
@@ -2086,7 +2086,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -7.797}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 59.07198, y: -74.94167}
+  m_AnchoredPosition: {x: 62.66748, y: -70.0911}
   m_SizeDelta: {x: 400, y: 130}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &929512246
@@ -2502,7 +2502,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 13.287}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -328.4648, y: -7.9232454}
+  m_AnchoredPosition: {x: -324.58633, y: -7.53164}
   m_SizeDelta: {x: 1179.44, y: 694.83}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1140773688
@@ -4411,7 +4411,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -7.797}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 40.212135, y: -331.4846}
+  m_AnchoredPosition: {x: 36.296272, y: -330.59317}
   m_SizeDelta: {x: 400, y: 130}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1680470714
@@ -4786,6 +4786,7 @@ GameObject:
   - component: {fileID: 1997261576}
   - component: {fileID: 1997261575}
   - component: {fileID: 1997261578}
+  - component: {fileID: 1997261579}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -4911,6 +4912,25 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1997261579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997261574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4dbb3368d6dc3747a19e5d35998648e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  crosshairTexture: {fileID: 2800000, guid: 7180cf1c3688a52439415db28d459f92, type: 3}
+  offset: {x: 0, y: 0}
+  cursorMode: 0
+  previewInGameView: 1
+  showTrueCenterInGameView: 1
+  trueCenterMarkSize: 10
+  applyOnValidateInEditor: 1
 --- !u!1 &2030906784
 GameObject:
   m_ObjectHideFlags: 0
