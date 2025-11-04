@@ -757,7 +757,7 @@ MonoBehaviour:
   detectDown: 1
   detectionRange: 7
   attackRange: 10
-  chargeDuration: 2.5
+  chargeDuration: 2
   faceTarget: 1
   ignoreFreezeForShooting: 1
   resetChargeOnFreeze: 1
