@@ -54,7 +54,7 @@ public class EnemyRangedCharger : MonoBehaviour
     public float bulletSpeed = 12f;
     public bool overrideBulletDamage = true;
     public float bulletDamage = 1f;
-    public string bulletTagForSwitch = "Fire";
+    public string bulletTagForSwitch = "FireBullet";
     public float generatorChargePercent = 100f;
 
     [Header("Particles")]

@@ -552,7 +552,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.95, y: 1.82, z: 0}
-  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6944270487770486632}
@@ -745,7 +745,7 @@ MonoBehaviour:
   autoFlipOnObstacle: 1
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
-  wallCheckDistance: 0.6
+  wallCheckDistance: 0.85
   groundMask:
     serializedVersion: 2
     m_Bits: 64
@@ -753,7 +753,7 @@ MonoBehaviour:
   useRectDetection: 1
   detectLeft: 4
   detectRight: 10
-  detectUp: 3.5
+  detectUp: 2
   detectDown: 1
   detectionRange: 7
   attackRange: 10

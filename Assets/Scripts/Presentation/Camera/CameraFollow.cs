@@ -8,12 +8,20 @@ public class CameraFollow : MonoBehaviour
         FixedPoints
     }
 
+    public enum PairMode
+    {
+        Inherit,
+        FollowTarget,
+        FixedPoints
+    }
+
     [System.Serializable]
     public class CameraTriggerPair
     {
         public Transform triggerObject;
         public Transform cameraPoint;
         public bool smoothTransition = true;
+        public PairMode modeOverride = PairMode.Inherit;
     }
 
     public CameraMode mode = CameraMode.FollowTarget;
@@ -28,9 +36,13 @@ public class CameraFollow : MonoBehaviour
     private bool currentSmoothMove = true;
     private Vector3 velocity = Vector3.zero;
 
+    private bool hasLocalOverride = false;
+    private CameraMode localMode = CameraMode.FollowTarget;
+
     private void FixedUpdate()
     {
-        switch (mode)
+        var effectiveMode = hasLocalOverride ? localMode : mode;
+        switch (effectiveMode)
         {
             case CameraMode.FollowTarget:
                 FollowTargetMode();
@@ -46,8 +58,15 @@ public class CameraFollow : MonoBehaviour
         if (target == null) return;
         Vector3 desiredPosition = target.position + offset;
         desiredPosition.z = transform.position.z;
-        Vector3 smoothedPosition = Vector3.SmoothDamp(transform.position, desiredPosition, ref velocity, smoothSpeed);
-        transform.position = smoothedPosition;
+        if (currentSmoothMove)
+        {
+            Vector3 smoothedPosition = Vector3.SmoothDamp(transform.position, desiredPosition, ref velocity, smoothSpeed);
+            transform.position = smoothedPosition;
+        }
+        else
+        {
+            transform.position = desiredPosition;
+        }
     }
 
     private void FixedPointsMode()
@@ -70,13 +89,31 @@ public class CameraFollow : MonoBehaviour
         for (int i = 0; i < (cameraPairs != null ? cameraPairs.Length : 0); i++)
         {
             var p = cameraPairs[i];
-            if (p != null && p.triggerObject == trigger && p.cameraPoint != null)
+            if (p != null && p.triggerObject == trigger)
             {
-                currentPoint = p.cameraPoint;
+                if (p.cameraPoint != null)
+                {
+                    currentPoint = p.cameraPoint;
+                }
                 currentSmoothMove = p.smoothTransition;
                 velocity = Vector3.zero;
+
+                if (p.modeOverride == PairMode.Inherit)
+                {
+                    hasLocalOverride = false;
+                }
+                else
+                {
+                    hasLocalOverride = true;
+                    localMode = (p.modeOverride == PairMode.FollowTarget) ? CameraMode.FollowTarget : CameraMode.FixedPoints;
+                }
                 return;
             }
         }
+    }
+
+    public void ClearLocalOverride()
+    {
+        hasLocalOverride = false;
     }
 }
