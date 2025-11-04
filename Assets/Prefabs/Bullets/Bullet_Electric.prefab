@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f4b9f49b7021b14e9ad550e4417fbc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseDamage: 1
+  baseDamage: 10
   lifeTime: 5
   destroyOnHit: 1
   maxPierce: 0
@@ -179,3 +179,5 @@ MonoBehaviour:
   iceFreezeDuration: 0
   bonusDamageIfTargetFrozen: 0
   onHitParticlePrefab: {fileID: 0}
+  limitDamageToTag: 0
+  damageOnlyTag: 

@@ -365,7 +365,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_TargetDisplay: 0
 --- !u!114 &1141116558945589406
 MonoBehaviour:
@@ -824,7 +824,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_TargetDisplay: 0
 --- !u!114 &8646454718386853490
 MonoBehaviour:
@@ -901,6 +901,8 @@ GameObject:
   - component: {fileID: 1998274075815931191}
   - component: {fileID: 8698537218468533173}
   - component: {fileID: 8646873316132395258}
+  - component: {fileID: 2023098034094294251}
+  - component: {fileID: 657548012077329889}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -971,7 +973,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 5
   m_Sprite: {fileID: -6306078467499190918, guid: 7fa1584ec07347047afb4c76dfa75d22, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1044,8 +1046,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.13079277, y: 0}
-  m_Size: {x: 1.5350614, y: 2}
+  m_Offset: {x: -0.13079274, y: 0.021503448}
+  m_Size: {x: 1.5350614, y: 1.9569931}
   m_Direction: 0
 --- !u!114 &6400681590919722272
 MonoBehaviour:
@@ -1061,14 +1063,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 2031078734043402749}
   capsule: {fileID: 2244385824934481141}
-  moveSpeed: 2
+  moveSpeed: 3.5
   acceleration: 60
   deceleration: 80
   airControl: 0.6
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  jumpForce: 6.5
+  jumpForce: 7.8
   coyoteTime: 0.1
   jumpBuffer: 0.1
   recoilDamping: 8
@@ -1084,7 +1086,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 156575d221185314aab95c97e5a4a2f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHP: 10
+  maxHP: 30
   useShield: 0
   shieldBar: {fileID: 5506144453938452764}
   maxShield: 0
@@ -1163,10 +1165,10 @@ MonoBehaviour:
   owner: {fileID: 6179979184917067807}
   windupTime: 1
   cooldown: 1.2
-  sectorRadius: 5
-  sectorAngleDeg: 30
+  sectorRadius: 4
+  sectorAngleDeg: 40
   damage: 1
-  pushImpulse: 8
+  pushImpulse: 15
   recoilVelocity: 2.5
   hitMask:
     serializedVersion: 2
@@ -1179,6 +1181,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   generatorProxySpeed: 20
+  chargeClip: {fileID: 0}
+  fireClip: {fileID: 8300000, guid: 88f2cdd71410cc045ad8834beef647b1, type: 3}
+  chargeVolume: 1
+  fireVolume: 1
+  verticalRecoilMultiplier: 0.25
 --- !u!114 &8646873316132395258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1194,15 +1201,56 @@ MonoBehaviour:
   weapon: {fileID: 8242508782343590631}
   firePoint: {fileID: 3403806881188929036}
   owner: {fileID: 6179979184917067807}
-  maxChargeTime: 5
-  cooldown: 2
-  fullFreezeDuration: 4
-  halfFreezeDuration: 2
-  bonusDamageIfFrozen: 0
-  generatorFullChargePercent: 100
-  generatorHalfChargePercent: 50
+  maxChargeTime: 2
+  cooldown: 1
+  baseFreezeDuration: 3
+  minEffectiveCharge01: 0.2
+  highTierThreshold01: 0.8
+  highTierDamageMultiplier: 1.5
   chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
   releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
+  chargeLoopClip: {fileID: 8300000, guid: 132e76be69bc61c49b8b2a95e5c2c04c, type: 3}
+  fireClip: {fileID: 8300000, guid: 018cfb13df196a5448230db82d927eb9, type: 3}
+  chargeVolume: 1
+  fireVolume: 1
+--- !u!95 &2023098034094294251
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6179979184917067807}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: aaba99a52b21c3d41809a3a7616e3017, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &657548012077329889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6179979184917067807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7c1b49d572edd4aa5d5b0fe0041ca3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 2023098034094294251}
+  speedParam: Speed
+  leftKey: 97
+  rightKey: 100
 --- !u!1 &7344498492535541808
 GameObject:
   m_ObjectHideFlags: 0
