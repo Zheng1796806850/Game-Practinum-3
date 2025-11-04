@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ElementalGenerator : MonoBehaviour
+public class ElementalGenerator : MonoBehaviour, ISwitch
 {
     public enum AcceptType { FireOnly, IceOnly, Any }
 
@@ -21,8 +22,14 @@ public class ElementalGenerator : MonoBehaviour
     [SerializeField] private Slider generatorBar;
     [SerializeField] private Slider[] lineSliders;
 
+    [Header("Sequence")]
+    [SerializeField] private bool useSequentialMode = false;
+    [SerializeField] private MonoBehaviour[] prerequisites;
+    [SerializeField] private bool drainOnPrerequisiteLost = true;
+
     public bool IsActivated { get; private set; }
     public float ChargePercent { get; private set; }
+    public event Action<bool> OnActivatedChanged;
 
     private int lastHitFrame = -1;
     private float lastHitTime = -999f;
@@ -45,6 +52,12 @@ public class ElementalGenerator : MonoBehaviour
 
     void Update()
     {
+        if (useSequentialMode && !ArePrerequisitesMet())
+        {
+            ForceDeactivateDueToPrereqLost();
+            return;
+        }
+
         if (ChargePercent > 0f && decayPerSecondPercent > 0f)
         {
             ChargePercent = Mathf.Max(0f, ChargePercent - decayPerSecondPercent * Time.deltaTime);
@@ -59,13 +72,11 @@ public class ElementalGenerator : MonoBehaviour
         if (Time.frameCount == lastHitFrame) return;
         if (Time.time - lastHitTime < retriggerCooldown) return;
         if (!Accepts(proj)) return;
+        if (useSequentialMode && !ArePrerequisitesMet()) return;
 
         float add = perHitChargePercent;
         var payload = other.GetComponent<GeneratorChargePayload>();
-        if (payload != null && payload.chargePercent >= 0f)
-        {
-            add = payload.chargePercent;
-        }
+        if (payload != null && payload.chargePercent >= 0f) add = payload.chargePercent;
 
         ChargePercent = Mathf.Min(100f, ChargePercent + add);
         EvaluateActivation();
@@ -84,14 +95,40 @@ public class ElementalGenerator : MonoBehaviour
 
     private void EvaluateActivation()
     {
+        bool newActive = IsActivated;
         if (IsActivated)
         {
-            if (ChargePercent < deactivationPercent) IsActivated = false;
+            if (ChargePercent < deactivationPercent) newActive = false;
         }
         else
         {
-            if (ChargePercent >= activationPercent) IsActivated = true;
+            if (ChargePercent >= activationPercent) newActive = true;
         }
+        if (newActive && useSequentialMode && !ArePrerequisitesMet()) newActive = false;
+        if (newActive != IsActivated) SetActivated(newActive);
+    }
+
+    private void SetActivated(bool v)
+    {
+        if (IsActivated == v) return;
+        IsActivated = v;
+        OnActivatedChanged?.Invoke(IsActivated);
+    }
+
+    private void ForceDeactivateDueToPrereqLost()
+    {
+        bool changed = false;
+        if (IsActivated)
+        {
+            IsActivated = false;
+            OnActivatedChanged?.Invoke(false);
+            changed = true;
+        }
+        if (drainOnPrerequisiteLost && (ChargePercent > 0f || changed))
+        {
+            ChargePercent = 0f;
+        }
+        RefreshUI();
     }
 
     private void RefreshUI()
@@ -127,5 +164,24 @@ public class ElementalGenerator : MonoBehaviour
         deactivationPercent = Mathf.Clamp(deactivationPercent, 0f, activationPercent);
         perHitChargePercent = Mathf.Clamp(perHitChargePercent, 0f, 100f);
         decayPerSecondPercent = Mathf.Max(0f, decayPerSecondPercent);
+    }
+
+    private bool ArePrerequisitesMet()
+    {
+        if (prerequisites == null || prerequisites.Length == 0) return true;
+        for (int i = 0; i < prerequisites.Length; i++)
+        {
+            var mb = prerequisites[i];
+            if (mb == null) return false;
+            if (mb is ISwitch sw)
+            {
+                if (!sw.IsActivated) return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

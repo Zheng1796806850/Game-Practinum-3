@@ -1,6 +1,7 @@
+using System;
 using UnityEngine;
 
-public class BulletSwitch : MonoBehaviour
+public class BulletSwitch : MonoBehaviour, ISwitch
 {
     [SerializeField] private string activateTag = "Fire";
     [SerializeField] private string deactivateTag = "Ice";
@@ -17,7 +18,12 @@ public class BulletSwitch : MonoBehaviour
     [Header("Boop Trigger")]
     [SerializeField] private bool allowBoopTrigger = true;
 
+    [Header("Sequence")]
+    [SerializeField] private bool useSequentialMode = false;
+    [SerializeField] private MonoBehaviour[] prerequisites;
+
     public bool IsActivated { get; private set; }
+    public event Action<bool> OnActivatedChanged;
 
     private int lastToggleFrame = -9999;
     private float lastToggleTime = -9999f;
@@ -40,6 +46,11 @@ public class BulletSwitch : MonoBehaviour
                     SetActivated(false);
                 }
             }
+        }
+
+        if (useSequentialMode && IsActivated && !ArePrerequisitesMet())
+        {
+            SetActivated(false);
         }
     }
 
@@ -71,7 +82,7 @@ public class BulletSwitch : MonoBehaviour
 
     public void ActivateExtern()
     {
-        SetActivated(true);
+        TryToggleOrActivate(true);
     }
 
     private void TryToggleOrActivate(bool isActivate)
@@ -81,12 +92,24 @@ public class BulletSwitch : MonoBehaviour
 
         if (toggleable)
         {
-            SetActivated(!IsActivated);
+            if (!useSequentialMode || ArePrerequisitesMet())
+                SetActivated(!IsActivated);
+            else
+                TouchRetriggerClocks();
         }
         else
         {
-            if (isActivate) SetActivated(true);
-            else SetActivated(false);
+            if (isActivate)
+            {
+                if (!useSequentialMode || ArePrerequisitesMet())
+                    SetActivated(true);
+                else
+                    TouchRetriggerClocks();
+            }
+            else
+            {
+                SetActivated(false);
+            }
         }
     }
 
@@ -94,20 +117,49 @@ public class BulletSwitch : MonoBehaviour
     {
         if (IsActivated == v)
         {
-            lastToggleFrame = Time.frameCount;
-            lastToggleTime = Time.time;
+            TouchRetriggerClocks();
             if (IsActivated && autoDeactivateAfterCountdown) deactivateClock = deactivateDelay;
             RefreshColor();
             return;
         }
 
+        if (v && useSequentialMode && !ArePrerequisitesMet())
+        {
+            TouchRetriggerClocks();
+            RefreshColor();
+            return;
+        }
+
         IsActivated = v;
-
         if (IsActivated && autoDeactivateAfterCountdown) deactivateClock = deactivateDelay;
+        TouchRetriggerClocks();
+        RefreshColor();
+        OnActivatedChanged?.Invoke(IsActivated);
+    }
 
+    private void TouchRetriggerClocks()
+    {
         lastToggleFrame = Time.frameCount;
         lastToggleTime = Time.time;
-        RefreshColor();
+    }
+
+    private bool ArePrerequisitesMet()
+    {
+        if (prerequisites == null || prerequisites.Length == 0) return true;
+        for (int i = 0; i < prerequisites.Length; i++)
+        {
+            var mb = prerequisites[i];
+            if (mb == null) return false;
+            if (mb is ISwitch sw)
+            {
+                if (!sw.IsActivated) return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void RefreshColor()

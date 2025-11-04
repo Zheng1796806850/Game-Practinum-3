@@ -171,7 +171,7 @@ MonoBehaviour:
   maxPierce: 0
   hitMask:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 576
   projectileType: 1
   fireDotDuration: 0
   fireDotInterval: 0

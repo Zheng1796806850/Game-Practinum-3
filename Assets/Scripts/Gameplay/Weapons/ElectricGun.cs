@@ -8,11 +8,10 @@ public class ElectricGun : MonoBehaviour
     public GameObject owner;
     public float maxChargeTime = 5f;
     public float cooldown = 2f;
-    public float fullFreezeDuration = 4f;
-    public float halfFreezeDuration = 2f;
-    public float bonusDamageIfFrozen = 0f;
-    public float generatorFullChargePercent = 100f;
-    public float generatorHalfChargePercent = 50f;
+    public float baseFreezeDuration = 3f;
+    public float minEffectiveCharge01 = 0.2f;
+    public float highTierThreshold01 = 0.8f;
+    public float highTierDamageMultiplier = 1.5f;
     public ParticleSystem chargeParticlesPrefab;
     public ParticleSystem releaseParticlesPrefab;
 
@@ -23,24 +22,44 @@ public class ElectricGun : MonoBehaviour
     private ParticleSystem chargeInstance;
     private Vector2 aimDir = Vector2.right;
 
+    public float Charge01
+    {
+        get { return Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime)); }
+    }
+
+    public float CooldownWheel01
+    {
+        get
+        {
+            if (!isOnCooldown || cooldown <= 0f) return 0f;
+            return Mathf.Clamp01(cooldownRemain / cooldown);
+        }
+    }
+
     public void SetAimDirection(Vector2 dir)
     {
         if (dir.sqrMagnitude > 1e-6f) aimDir = dir.normalized;
+        if (chargeInstance != null)
+        {
+            chargeInstance.transform.position = firePoint != null ? firePoint.position : transform.position;
+            chargeInstance.transform.right = aimDir;
+        }
     }
 
     public void BeginCharge()
     {
         if (isOnCooldown) return;
+        if (weapon == null || firePoint == null) return;
         if (isCharging) return;
-        if (weapon == null || firePoint == null || owner == null) return;
         isCharging = true;
         chargeT = 0f;
         if (chargeParticlesPrefab != null)
         {
-            chargeInstance = Instantiate(chargeParticlesPrefab, firePoint.position, Quaternion.identity, firePoint);
-            chargeInstance.transform.right = aimDir;
+            chargeInstance = Instantiate(chargeParticlesPrefab, firePoint.position, Quaternion.identity);
             var main = chargeInstance.main;
-            main.loop = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            chargeInstance.transform.right = aimDir;
+            chargeInstance.transform.parent = null;
             chargeInstance.Play();
         }
     }
@@ -48,9 +67,9 @@ public class ElectricGun : MonoBehaviour
     public void HoldCharge(float dt)
     {
         if (!isCharging) return;
-        chargeT += dt;
+        chargeT += Mathf.Max(0f, dt);
         if (chargeT > maxChargeTime) chargeT = maxChargeTime;
-        if (chargeInstance != null)
+        if (chargeInstance != null && firePoint != null)
         {
             chargeInstance.transform.position = firePoint.position;
             chargeInstance.transform.right = aimDir;
@@ -61,14 +80,13 @@ public class ElectricGun : MonoBehaviour
     {
         if (!isCharging) return;
         float k = Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime));
-
         if (chargeInstance != null)
         {
             Destroy(chargeInstance.gameObject);
             chargeInstance = null;
         }
 
-        if (k <= 0.20f)
+        if (k <= minEffectiveCharge01)
         {
             isCharging = false;
             chargeT = 0f;
@@ -76,9 +94,11 @@ public class ElectricGun : MonoBehaviour
             return;
         }
 
-        bool halfEffect = k < 0.81f;
-        float damageScale = halfEffect ? 0.5f : 1f;
-        float damageToUse = (weapon != null ? weapon.damage : 1f) * damageScale;
+        bool highTier = k >= highTierThreshold01;
+        float baseDamage = weapon != null ? weapon.damage : 1f;
+        float damageToUse = highTier ? baseDamage * highTierDamageMultiplier : baseDamage * k;
+        float payloadPercent = highTier ? 100f : Mathf.Clamp01(k) * 100f;
+        float freezeDuration = Mathf.Max(0f, baseFreezeDuration * Mathf.Clamp01(k));
 
         if (weapon != null)
         {
@@ -87,16 +107,15 @@ public class ElectricGun : MonoBehaviour
                 if (proj != null)
                 {
                     proj.projectileType = Projectile.ProjectileType.Ice;
-                    proj.iceFreezeDuration = halfEffect ? halfFreezeDuration : fullFreezeDuration;
-                    proj.bonusDamageIfTargetFrozen = bonusDamageIfFrozen;
+                    proj.iceFreezeDuration = freezeDuration;
                     var payload = go.GetComponent<GeneratorChargePayload>();
                     if (payload == null) payload = go.AddComponent<GeneratorChargePayload>();
-                    payload.chargePercent = halfEffect ? generatorHalfChargePercent : generatorFullChargePercent;
+                    payload.chargePercent = payloadPercent;
                 }
             }
         }
 
-        if (releaseParticlesPrefab != null)
+        if (releaseParticlesPrefab != null && firePoint != null)
         {
             var ps = Instantiate(releaseParticlesPrefab, firePoint.position, Quaternion.identity);
             var main = ps.main;
@@ -111,25 +130,14 @@ public class ElectricGun : MonoBehaviour
         StartCoroutine(CooldownTimer());
     }
 
-    public float Charge01
-    {
-        get
-        {
-            return Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime));
-        }
-    }
-
-    public float CooldownWheel01
-    {
-        get
-        {
-            if (!isOnCooldown || cooldown <= 0f) return 0f;
-            return Mathf.Clamp01(cooldownRemain / Mathf.Max(0.0001f, cooldown));
-        }
-    }
-
     private IEnumerator CooldownTimer()
     {
+        if (cooldown <= 0f)
+        {
+            isOnCooldown = false;
+            cooldownRemain = 0f;
+            yield break;
+        }
         isOnCooldown = true;
         cooldownRemain = cooldown;
         while (cooldownRemain > 0f)

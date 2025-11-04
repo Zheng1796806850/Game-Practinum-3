@@ -603,7 +603,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementEnabled: 1
-  moveSpeed: 2.5
+  moveSpeed: 1.25
   groundCheck: {fileID: 1777747410220964028}
   groundCheckDistance: 0.25
   wallCheckDistance: 0.8
@@ -637,7 +637,7 @@ MonoBehaviour:
   useRanged: 0
   manualFireOnly: 0
   useRectDetection: 1
-  detectLeft: 3.5
+  detectLeft: 1.43
   detectRight: 6
   detectUp: 3
   detectDown: 1
