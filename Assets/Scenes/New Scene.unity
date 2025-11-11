@@ -41922,6 +41922,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 488718338}
     - target: {fileID: 6400681590919722272, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: data
+      value: 
+      objectReference: {fileID: 11400000, guid: 1a467d827e0e2ce4f9c3135731d1bd77, type: 2}
+    - target: {fileID: 6400681590919722272, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
@@ -41970,8 +41974,16 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8698537218468533173, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: recoilVelocity
+      value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 8698537218468533173, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
       propertyPath: sectorAngleDeg
       value: 130
+      objectReference: {fileID: 0}
+    - target: {fileID: 8698537218468533173, guid: d3bb2a48cf2782946b5d44d8dea59e27, type: 3}
+      propertyPath: verticalRecoilMultiplier
+      value: 0.6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

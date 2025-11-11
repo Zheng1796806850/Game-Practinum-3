@@ -6,74 +6,83 @@ public class PlayerController : MonoBehaviour
     public Rigidbody2D rb;
     public CapsuleCollider2D capsule;
 
-    [Header("Move")]
-    public float moveSpeed = 6f;
-    public float acceleration = 60f;
-    public float deceleration = 80f;
-    public float airControl = 0.6f;
+    [Header("Data")]
+    public PlayerData data;
 
-    [Header("Jump")]
+    [Header("Ground")]
     public LayerMask groundMask;
-    public float jumpForce = 12f;
-    public float coyoteTime = 0.1f;
-    public float jumpBuffer = 0.1f;
+
+    [Header("Input")]
+    public string horizontalAxis = "Horizontal";
+    public string verticalAxis = "Vertical";
+    public string jumpButton = "Jump";
 
     [Header("Recoil")]
     public float recoilDamping = 8f;
 
     private float inputX;
-    private bool grounded;
-    private float lastGroundedTime;
-    private float lastJumpPressTime;
-    private bool wantJump;
+    private float inputY;
+
+    private bool isJumping;
+    private bool isJumpFalling;
+    private bool isJumpCut;
+
+    private float lastGroundedTime = -999f;
+    private float lastJumpPressedTime = -999f;
+
     private Vector2 externalVelocity;
 
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (capsule == null) capsule = GetComponent<CapsuleCollider2D>();
-        lastJumpPressTime = -999f;
-        lastGroundedTime = -999f;
         externalVelocity = Vector2.zero;
+    }
+
+    void Start()
+    {
+        if (data != null) SetGravityScale(data.gravityScale);
     }
 
     void Update()
     {
-        inputX = Input.GetAxisRaw("Horizontal");
-        if (Input.GetButtonDown("Jump")) lastJumpPressTime = Time.time;
+        inputX = Input.GetAxisRaw(horizontalAxis);
+        inputY = Input.GetAxisRaw(verticalAxis);
+
+        if (Input.GetButtonDown(jumpButton))
+            lastJumpPressedTime = Time.time;
+
+        if (Input.GetButtonUp(jumpButton))
+        {
+            if (CanJumpCut()) isJumpCut = true;
+        }
 
         if (IsGrounded())
         {
-            grounded = true;
             lastGroundedTime = Time.time;
-        }
-        else
-        {
-            grounded = false;
+            if (!isJumping) isJumpFalling = false;
         }
 
-        bool pressedRecently = Time.time - lastJumpPressTime <= jumpBuffer && lastJumpPressTime > -900f;
-        bool canCoyote = Time.time - lastGroundedTime <= coyoteTime;
-        wantJump = pressedRecently && canCoyote;
+        if (isJumping && rb.linearVelocity.y < 0f)
+        {
+            isJumping = false;
+            isJumpFalling = true;
+        }
+
+        bool buffered = Time.time - lastJumpPressedTime <= data.jumpInputBufferTime;
+        bool canCoyote = Time.time - lastGroundedTime <= data.coyoteTime;
+
+        if (buffered && canCoyote && CanJump())
+        {
+            DoJump();
+        }
+
+        ApplySmartGravity();
     }
 
     void FixedUpdate()
     {
-        float target = inputX * moveSpeed;
-        float accel = Mathf.Abs(target) > 0.01f ? acceleration : deceleration;
-        float ctrl = grounded ? 1f : airControl;
-        float vx = Mathf.MoveTowards(rb.linearVelocity.x, target, accel * ctrl * Time.fixedDeltaTime);
-        float vy = rb.linearVelocity.y;
-
-        if (wantJump)
-        {
-            vy = jumpForce;
-            wantJump = false;
-            lastJumpPressTime = -999f;
-            lastGroundedTime = -999f;
-        }
-
-        rb.linearVelocity = new Vector2(vx, vy);
+        Run();
 
         if (externalVelocity.sqrMagnitude > 0.000001f)
         {
@@ -89,6 +98,107 @@ public class PlayerController : MonoBehaviour
         externalVelocity += velocityDelta;
     }
 
+    private void Run()
+    {
+        float targetSpeed = inputX * data.runMaxSpeed;
+        float accelRate;
+
+        bool onGround = Time.time - lastGroundedTime <= data.coyoteTime;
+
+        if (onGround)
+            accelRate = Mathf.Abs(targetSpeed) > 0.01f ? data.runAccelAmount : data.runDeccelAmount;
+        else
+            accelRate = (Mathf.Abs(targetSpeed) > 0.01f ? data.runAccelAmount * data.accelInAir : data.runDeccelAmount * data.deccelInAir);
+
+        if ((isJumping || isJumpFalling) && Mathf.Abs(rb.linearVelocity.y) < data.jumpHangTimeThreshold)
+        {
+            accelRate *= data.jumpHangAccelerationMult;
+            targetSpeed *= data.jumpHangMaxSpeedMult;
+        }
+
+        if (data.doConserveMomentum &&
+            Mathf.Abs(rb.linearVelocity.x) > Mathf.Abs(targetSpeed) &&
+            Mathf.Sign(rb.linearVelocity.x) == Mathf.Sign(targetSpeed) &&
+            Mathf.Abs(targetSpeed) > 0.01f &&
+            !onGround)
+        {
+            accelRate = 0f;
+        }
+
+        float speedDiff = targetSpeed - rb.linearVelocity.x;
+        float movement = speedDiff * accelRate;
+        rb.AddForce(movement * Vector2.right, ForceMode2D.Force);
+    }
+
+    private void DoJump()
+    {
+        lastJumpPressedTime = -999f;
+        lastGroundedTime = -999f;
+
+        float force = data.jumpForce;
+        if (rb.linearVelocity.y < 0f) force -= rb.linearVelocity.y;
+
+        rb.AddForce(Vector2.up * force, ForceMode2D.Impulse);
+
+        isJumping = true;
+        isJumpCut = false;
+        isJumpFalling = false;
+    }
+
+    private void ApplySmartGravity()
+    {
+        if (IsGrounded() && rb.linearVelocity.y <= 0f)
+        {
+            SetGravityScale(data.gravityScale);
+            isJumpCut = false;
+            return;
+        }
+
+        if (rb.linearVelocity.y < 0f && inputY < 0f)
+        {
+            SetGravityScale(data.gravityScale * data.fastFallGravityMult);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Max(rb.linearVelocity.y, -data.maxFastFallSpeed));
+            return;
+        }
+
+        if (isJumpCut)
+        {
+            SetGravityScale(data.gravityScale * data.jumpCutGravityMult);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Max(rb.linearVelocity.y, -data.maxFallSpeed));
+            return;
+        }
+
+        if ((isJumping || isJumpFalling) && Mathf.Abs(rb.linearVelocity.y) < data.jumpHangTimeThreshold)
+        {
+            SetGravityScale(data.gravityScale * data.jumpHangGravityMult);
+            return;
+        }
+
+        if (rb.linearVelocity.y < 0f)
+        {
+            SetGravityScale(data.gravityScale * data.fallGravityMult);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Max(rb.linearVelocity.y, -data.maxFallSpeed));
+            return;
+        }
+
+        SetGravityScale(data.gravityScale);
+    }
+
+    private bool CanJump()
+    {
+        return !isJumping;
+    }
+
+    private bool CanJumpCut()
+    {
+        return (isJumping || isJumpFalling) && rb.linearVelocity.y > 0f;
+    }
+
+    private void SetGravityScale(float scale)
+    {
+        rb.gravityScale = scale;
+    }
+
     private bool IsGrounded()
     {
         if (capsule == null) return false;
@@ -98,5 +208,16 @@ public class PlayerController : MonoBehaviour
         Vector2 size = new Vector2(bounds.size.x * 0.9f, extra);
         Collider2D hit = Physics2D.OverlapBox(center, size, 0f, groundMask);
         return hit != null;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (capsule == null) return;
+        var bounds = capsule.bounds;
+        float extra = 0.05f;
+        Vector3 center = new Vector3(bounds.center.x, bounds.min.y - extra * 0.5f, 0f);
+        Vector3 size = new Vector3(bounds.size.x * 0.9f, extra, 0.1f);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(center, size);
     }
 }
