@@ -765,9 +765,9 @@ MonoBehaviour:
   frozenChargeDuration: 2
   overrideBulletSpeed: 1
   bulletSpeed: 12
-  overrideBulletDamage: 1
+  overrideBulletDamage: 0
   bulletDamage: 10
-  bulletTagForSwitch: Fire
+  bulletTagForSwitch: FireBullet
   generatorChargePercent: 100
   chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
   shotParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
@@ -788,7 +788,7 @@ MonoBehaviour:
   massMultiplier: 5
   iceVisual: {fileID: 4564991741405087812}
   useFrozenVisuals: 0
-  keepTouchDamageWhenFrozen: 1
+  keepTouchDamageWhenFrozen: 0
 --- !u!114 &5151236132571502068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -818,7 +818,7 @@ MonoBehaviour:
   bulletSpeed: 10
   overrideBulletDamage: 0
   bulletDamage: 1
-  useTouchDamage: 1
+  useTouchDamage: 0
   touchDamage: 2
   touchCooldown: 0.5
   damageMask:

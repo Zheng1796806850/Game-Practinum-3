@@ -649,7 +649,7 @@ MonoBehaviour:
   bulletSpeed: 10
   overrideBulletDamage: 0
   bulletDamage: 1
-  useTouchDamage: 1
+  useTouchDamage: 0
   touchDamage: 3
   touchCooldown: 0.5
   damageMask:
@@ -672,7 +672,7 @@ MonoBehaviour:
   massMultiplier: 5
   iceVisual: {fileID: 8550168794803175932}
   useFrozenVisuals: 0
-  keepTouchDamageWhenFrozen: 1
+  keepTouchDamageWhenFrozen: 0
 --- !u!1 &5004488364103908749
 GameObject:
   m_ObjectHideFlags: 0
