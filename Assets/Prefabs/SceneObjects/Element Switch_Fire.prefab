@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 9046294862028323960}
   m_Layer: 6
   m_Name: Element Switch_Fire
-  m_TagString: Untagged
+  m_TagString: FireSwitch
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 1, b: 0, a: 1}
   m_FlipX: 0
@@ -179,9 +179,11 @@ MonoBehaviour:
   deactivateTag: IceBullet
   indicator: {fileID: 8354535020939999939}
   inactiveColor: {r: 0.9843138, g: 0.011764707, b: 0.011764707, a: 1}
-  activeColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 1}
+  activeColor: {r: 0.5566038, g: 0, b: 0, a: 1}
   toggleable: 0
   retriggerCooldown: 0.05
   autoDeactivateAfterCountdown: 1
   deactivateDelay: 10
   allowBoopTrigger: 1
+  useSequentialMode: 0
+  prerequisites: []

@@ -358,7 +358,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 0, b: 0.96470594, a: 1}
+  m_Color: {r: 1, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -380,19 +380,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a79b0b7fc7fb0a6418b09baffa929a4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requiredMass: 1
+  plateType: 0
+  allowPlayer: 1
+  allowEnemies: 1
+  requiredEnemyTag: Enemy
+  captureFreezeDuration: 9999
+  captureAnchor: {fileID: 0}
+  parentCapturedEnemyToAnchor: 1
+  activationPercent: 100
+  deactivationPercent: 80
+  decayPerSecondPercent: 5
+  secondsFrom0To100: 2
+  plateBar: {fileID: 0}
+  lineSliders: []
+  useSequentialMode: 0
+  prerequisites: []
+  drainOnPrerequisiteLost: 1
   indicator: {fileID: 7806992771026105067}
   inactiveColor: {r: 1, g: 1, b: 0, a: 1}
   activeColor: {r: 0, g: 1, b: 0, a: 1}
-  autoReset: 1
-  useSequentialMode: 0
-  prerequisites: []
   hideWhenPlayerOrEnemyOnTop: 1
   hideMode: 2
   targetTilemap: {fileID: 0}
   autoUseCellFromTransform: 1
   cellsToToggle: []
   visualGameObjectOverride: {fileID: 0}
+  playerDetectionArea: {fileID: 0}
+  enemyDetectionArea: {fileID: 0}
 --- !u!61 &3655069894966185186
 BoxCollider2D:
   m_ObjectHideFlags: 0

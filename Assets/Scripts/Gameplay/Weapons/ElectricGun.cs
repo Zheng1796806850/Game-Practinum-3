@@ -21,6 +21,10 @@ public class ElectricGun : MonoBehaviour
     [Range(0f, 1f)] public float chargeVolume = 1f;
     [Range(0f, 1f)] public float fireVolume = 1f;
 
+    [Header("Switch Filter")]
+    public bool useSwitchTagFilter = true;
+    public string switchTag = "ElectricSwitch";
+
     private bool isCharging;
     private float chargeT;
     private bool isOnCooldown;
@@ -63,7 +67,7 @@ public class ElectricGun : MonoBehaviour
         get
         {
             if (!isOnCooldown || cooldown <= 0f) return 0f;
-            return Mathf.Clamp01(cooldownRemain / cooldown);
+            return Mathf.Clamp01(cooldownRemain / Mathf.Max(0.0001f, cooldown));
         }
     }
 
@@ -134,34 +138,9 @@ public class ElectricGun : MonoBehaviour
             chargeInstance = null;
         }
 
-        if (k <= minEffectiveCharge01)
-        {
-            isCharging = false;
-            chargeT = 0f;
-            StartCoroutine(CooldownTimer());
-            return;
-        }
+        bool isChargedShot = k >= minEffectiveCharge01;
 
-        bool highTier = k >= highTierThreshold01;
-        float baseDamage = weapon != null ? weapon.damage : 1f;
-        float damageToUse = highTier ? baseDamage * highTierDamageMultiplier : baseDamage * k;
-        float payloadPercent = highTier ? 100f : Mathf.Clamp01(k) * 100f;
-        float freezeDuration = Mathf.Max(0f, baseFreezeDuration * Mathf.Clamp01(k));
-
-        if (weapon != null)
-        {
-            if (weapon.TryFireReturnProjectile(aimDir, damageToUse, out var proj, out var go))
-            {
-                if (proj != null)
-                {
-                    proj.projectileType = Projectile.ProjectileType.Ice;
-                    proj.iceFreezeDuration = freezeDuration;
-                    var payload = go.GetComponent<GeneratorChargePayload>();
-                    if (payload == null) payload = go.AddComponent<GeneratorChargePayload>();
-                    payload.chargePercent = payloadPercent;
-                }
-            }
-        }
+        FireShot(isChargedShot, k);
 
         if (releaseParticlesPrefab != null && firePoint != null)
         {
@@ -182,6 +161,49 @@ public class ElectricGun : MonoBehaviour
         isCharging = false;
         chargeT = 0f;
         StartCoroutine(CooldownTimer());
+    }
+
+    private void FireShot(bool chargedShot, float charge01)
+    {
+        if (weapon == null) return;
+
+        float baseDamage = weapon != null ? weapon.damage : 1f;
+        bool highTier = chargedShot && charge01 >= highTierThreshold01;
+
+        float damageToUse;
+        float payloadPercent;
+        float freezeDuration;
+
+        if (!chargedShot)
+        {
+            damageToUse = baseDamage;
+            payloadPercent = 0f;
+            freezeDuration = 0f;
+        }
+        else
+        {
+            damageToUse = highTier ? baseDamage * highTierDamageMultiplier : baseDamage * charge01;
+            payloadPercent = highTier ? 100f : Mathf.Clamp01(charge01) * 100f;
+            freezeDuration = Mathf.Max(0f, baseFreezeDuration * Mathf.Clamp01(charge01));
+        }
+
+        if (weapon.TryFireReturnProjectile(aimDir, damageToUse, out var proj, out var go))
+        {
+            if (proj != null)
+            {
+                proj.projectileType = chargedShot ? Projectile.ProjectileType.Ice : Projectile.ProjectileType.Normal;
+                proj.iceFreezeDuration = freezeDuration;
+
+                proj.useSwitchTagFilter = useSwitchTagFilter;
+                proj.switchTag = switchTag;
+                proj.activateSwitchOnHit = !chargedShot;
+                proj.deactivateSwitchOnHit = chargedShot;
+
+                var payload = go.GetComponent<GeneratorChargePayload>();
+                if (payload == null) payload = go.AddComponent<GeneratorChargePayload>();
+                payload.chargePercent = payloadPercent;
+            }
+        }
     }
 
     private IEnumerator CooldownTimer()

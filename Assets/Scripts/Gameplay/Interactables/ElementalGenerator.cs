@@ -9,6 +9,9 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     [Header("Accept")]
     [SerializeField] private AcceptType accept = AcceptType.IceOnly;
 
+    [Header("Mode")]
+    [SerializeField] private bool useReverseMode = false;
+
     [Header("Charge (%)")]
     [Range(0f, 100f)][SerializeField] private float activationPercent = 100f;
     [Range(0f, 100f)][SerializeField] private float deactivationPercent = 80f;
@@ -36,17 +39,36 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
 
     void Awake()
     {
-        if (generatorBar != null) { generatorBar.maxValue = 1f; generatorBar.value = 0f; }
+        if (generatorBar != null)
+        {
+            generatorBar.maxValue = 1f;
+            generatorBar.value = 0f;
+        }
         if (lineSliders != null)
         {
             for (int i = 0; i < lineSliders.Length; i++)
             {
-                if (lineSliders[i] != null) { lineSliders[i].maxValue = 1f; lineSliders[i].value = 0f; }
+                if (lineSliders[i] != null)
+                {
+                    lineSliders[i].maxValue = 1f;
+                    lineSliders[i].value = 0f;
+                }
             }
         }
-        ChargePercent = 0f;
-        IsActivated = false;
+
         ClampThresholds();
+
+        if (useReverseMode)
+        {
+            ChargePercent = 100f;
+        }
+        else
+        {
+            ChargePercent = 0f;
+        }
+
+        IsActivated = false;
+        EvaluateActivation();
         RefreshUI();
     }
 
@@ -58,11 +80,26 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             return;
         }
 
-        if (ChargePercent > 0f && decayPerSecondPercent > 0f)
+        if (decayPerSecondPercent > 0f)
         {
-            ChargePercent = Mathf.Max(0f, ChargePercent - decayPerSecondPercent * Time.deltaTime);
-            EvaluateActivation();
-            RefreshUI();
+            if (!useReverseMode)
+            {
+                if (ChargePercent > 0f)
+                {
+                    ChargePercent = Mathf.Max(0f, ChargePercent - decayPerSecondPercent * Time.deltaTime);
+                    EvaluateActivation();
+                    RefreshUI();
+                }
+            }
+            else
+            {
+                if (ChargePercent < 100f)
+                {
+                    ChargePercent = Mathf.Min(100f, ChargePercent + decayPerSecondPercent * Time.deltaTime);
+                    EvaluateActivation();
+                    RefreshUI();
+                }
+            }
         }
     }
 
@@ -78,7 +115,10 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         var payload = other.GetComponent<GeneratorChargePayload>();
         if (payload != null && payload.chargePercent >= 0f) add = payload.chargePercent;
 
-        ChargePercent = Mathf.Min(100f, ChargePercent + add);
+        float delta = add;
+        if (useReverseMode) delta = -delta;
+
+        ChargePercent = Mathf.Clamp(ChargePercent + delta, 0f, 100f);
         EvaluateActivation();
         RefreshUI();
 
@@ -96,14 +136,30 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     private void EvaluateActivation()
     {
         bool newActive = IsActivated;
-        if (IsActivated)
+
+        if (!useReverseMode)
         {
-            if (ChargePercent < deactivationPercent) newActive = false;
+            if (IsActivated)
+            {
+                if (ChargePercent < deactivationPercent) newActive = false;
+            }
+            else
+            {
+                if (ChargePercent >= activationPercent) newActive = true;
+            }
         }
         else
         {
-            if (ChargePercent >= activationPercent) newActive = true;
+            if (IsActivated)
+            {
+                if (ChargePercent > activationPercent) newActive = false;
+            }
+            else
+            {
+                if (ChargePercent <= deactivationPercent) newActive = true;
+            }
         }
+
         if (newActive && useSequentialMode && !ArePrerequisitesMet()) newActive = false;
         if (newActive != IsActivated) SetActivated(newActive);
     }

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5292287965064463226}
   m_Layer: 6
   m_Name: Element Switch_Ice
-  m_TagString: Untagged
+  m_TagString: IceSwitch
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

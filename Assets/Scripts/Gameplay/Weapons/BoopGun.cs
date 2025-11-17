@@ -31,6 +31,12 @@ public class BoopGun : MonoBehaviour
     [Header("Recoil")]
     [Range(0f, 1f)] public float verticalRecoilMultiplier = 0.5f;
 
+    [Header("Switch Filter")]
+    public bool useSwitchTagFilter = true;
+    public string switchTag = "FireSwitch";
+
+    private bool usePullMode;
+
     private bool isWinding;
     private bool isOnCooldown;
     private float cooldownRemain;
@@ -84,6 +90,15 @@ public class BoopGun : MonoBehaviour
     {
         if (firePoint == null) return;
         if (!CanStartWindup()) return;
+        usePullMode = false;
+        StartCoroutine(WindupThenBoop());
+    }
+
+    public void FireBoopPull()
+    {
+        if (firePoint == null) return;
+        if (!CanStartWindup()) return;
+        usePullMode = true;
         StartCoroutine(WindupThenBoop());
     }
 
@@ -108,7 +123,7 @@ public class BoopGun : MonoBehaviour
         if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
 
         isWinding = false;
-        DoBoop();
+        DoBoop(usePullMode);
         StartCoroutine(CooldownTimer());
     }
 
@@ -125,7 +140,7 @@ public class BoopGun : MonoBehaviour
         isOnCooldown = false;
     }
 
-    private void DoBoop()
+    private void DoBoop(bool pullMode)
     {
         if (shootParticles != null && firePoint != null)
         {
@@ -170,12 +185,28 @@ public class BoopGun : MonoBehaviour
                 processed.Add(root);
             }
 
+            if (pullMode)
+            {
+                PressurePlateSwitch.NotifyEnemyBoopedPull(col);
+            }
+            else
+            {
+                PressurePlateSwitch.NotifyEnemyBoopedPush(col);
+            }
+
             Vector2 dir = ((Vector2)root.position - (Vector2)firePoint.position).normalized;
+            Vector2 forceDir = pullMode ? -dir : dir;
 
             var sw = col.GetComponentInParent<BulletSwitch>();
             if (sw != null)
             {
-                sw.ActivateByBoop();
+                if (!useSwitchTagFilter || sw.gameObject.CompareTag(switchTag))
+                {
+                    if (pullMode)
+                        sw.DeactivateExtern();
+                    else
+                        sw.ActivateByBoop();
+                }
             }
 
             if (col.TryGetComponent<IDamageable>(out var dmg))
@@ -185,7 +216,7 @@ public class BoopGun : MonoBehaviour
 
             if (col.attachedRigidbody != null)
             {
-                col.attachedRigidbody.AddForce(dir * pushImpulse, ForceMode2D.Impulse);
+                col.attachedRigidbody.AddForce(forceDir * pushImpulse, ForceMode2D.Impulse);
             }
         }
 
@@ -207,6 +238,7 @@ public class BoopGun : MonoBehaviour
             {
                 var g = gens[i];
                 if (!IsInsideSector(g.bounds.ClosestPoint(firePoint.position))) continue;
+
                 var go = Instantiate(generatorProxyProjectilePrefab, firePoint.position, Quaternion.identity);
                 var rbp = go.GetComponent<Rigidbody2D>();
                 var proj = go.GetComponent<Projectile>();

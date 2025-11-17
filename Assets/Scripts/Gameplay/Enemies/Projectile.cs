@@ -25,6 +25,12 @@ public class Projectile : MonoBehaviour
     public bool limitDamageToTag = false;
     public string damageOnlyTag = "";
 
+    [Header("Switch Interaction")]
+    public bool useSwitchTagFilter = false;
+    public string switchTag = "";
+    public bool activateSwitchOnHit = false;
+    public bool deactivateSwitchOnHit = false;
+
     private Rigidbody2D rb;
     private GameObject owner;
     private int remainingPierce;
@@ -90,6 +96,7 @@ public class Projectile : MonoBehaviour
             if (allowDamage)
             {
                 damageable.ApplyDamage(new DamageInfo(dmg, dtype, owner));
+
                 if (projectileType == ProjectileType.Ice)
                 {
                     if (otherRoot.TryGetComponent<Health>(out var h2))
@@ -97,7 +104,10 @@ public class Projectile : MonoBehaviour
                         h2.ApplyFreeze(iceFreezeDuration);
                         if (bonusDamageIfTargetFrozen > 0f)
                         {
-                            if (h2.IsFrozen || frozenBefore) damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                            if (h2.IsFrozen || frozenBefore)
+                            {
+                                damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                            }
                         }
                     }
                     else if (other.TryGetComponent<IFreezable>(out var freezable))
@@ -119,34 +129,47 @@ public class Projectile : MonoBehaviour
                 }
             }
         }
-        else
+
+        if (projectileType == ProjectileType.Fire)
         {
-            if (projectileType == ProjectileType.Fire)
+            if (other.TryGetComponent<WaterPlatform>(out var water))
             {
-                if (other.TryGetComponent<WaterPlatform>(out var water))
-                {
-                    water.TryMeltFromFire();
-                }
-                else
-                {
-                    var parentWater = other.GetComponentInParent<WaterPlatform>();
-                    if (parentWater != null) parentWater.TryMeltFromFire();
-                }
+                water.TryMeltFromFire();
             }
-            else if (projectileType == ProjectileType.Ice)
+            else
             {
-                if (otherRoot.TryGetComponent<Health>(out var h4))
+                var parentWater = other.GetComponentInParent<WaterPlatform>();
+                if (parentWater != null) parentWater.TryMeltFromFire();
+            }
+        }
+        else if (projectileType == ProjectileType.Ice)
+        {
+            if (otherRoot.TryGetComponent<Health>(out var h4))
+            {
+                h4.ApplyFreeze(iceFreezeDuration);
+            }
+            else if (other.TryGetComponent<IFreezable>(out var freezable2))
+            {
+                freezable2.ApplyFreeze(iceFreezeDuration);
+            }
+            else
+            {
+                var parentFreezable2 = other.GetComponentInParent<IFreezable>();
+                if (parentFreezable2 != null) parentFreezable2.ApplyFreeze(iceFreezeDuration);
+            }
+        }
+
+        if (activateSwitchOnHit || deactivateSwitchOnHit)
+        {
+            BulletSwitch sw = otherRoot.GetComponent<BulletSwitch>();
+            if (sw == null) sw = otherRoot.GetComponentInChildren<BulletSwitch>();
+            if (sw == null) sw = other.GetComponentInParent<BulletSwitch>();
+            if (sw != null)
+            {
+                if (!useSwitchTagFilter || string.IsNullOrEmpty(switchTag) || sw.gameObject.CompareTag(switchTag))
                 {
-                    h4.ApplyFreeze(iceFreezeDuration);
-                }
-                else if (other.TryGetComponent<IFreezable>(out var freezable2))
-                {
-                    freezable2.ApplyFreeze(iceFreezeDuration);
-                }
-                else
-                {
-                    var parentFreezable2 = other.GetComponentInParent<IFreezable>();
-                    if (parentFreezable2 != null) parentFreezable2.ApplyFreeze(iceFreezeDuration);
+                    if (activateSwitchOnHit) sw.ActivateExtern();
+                    if (deactivateSwitchOnHit) sw.DeactivateExtern();
                 }
             }
         }

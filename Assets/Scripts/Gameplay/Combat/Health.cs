@@ -109,4 +109,19 @@ public class Health : MonoBehaviour, IDamageable
         OnFreezeStateChanged?.Invoke(false);
         freezeRoutine = null;
     }
+
+    public void ClearFreeze()
+    {
+        if (freezeRoutine != null)
+        {
+            StopCoroutine(freezeRoutine);
+            freezeRoutine = null;
+        }
+
+        if (IsFrozen)
+        {
+            IsFrozen = false;
+            OnFreezeStateChanged?.Invoke(false);
+        }
+    }
 }

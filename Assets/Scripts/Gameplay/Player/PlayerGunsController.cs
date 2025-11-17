@@ -7,6 +7,7 @@ public class PlayerGunsController : MonoBehaviour
     public GunMode mode = GunMode.Boop;
     public KeyCode switchKey = KeyCode.Q;
     public string fireAxis = "Fire1";
+    public string altFireAxis = "Fire2";
     public Transform weaponPivot;
     public Transform sharedFirePoint;
     public float firePointDistance = 0.4f;
@@ -80,6 +81,7 @@ public class PlayerGunsController : MonoBehaviour
         {
             if (boopGun != null) boopGun.SetAimDirection(aimDir);
             RegenerateBoopBar();
+
             if (Input.GetButtonDown(fireAxis))
             {
                 if (boopBarCurrent + 1e-4f >= boopShotCost && boopGun != null && boopGun.CanStartWindup())
@@ -90,6 +92,18 @@ public class PlayerGunsController : MonoBehaviour
                     if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
                 }
             }
+
+            if (!string.IsNullOrEmpty(altFireAxis) && Input.GetButtonDown(altFireAxis))
+            {
+                if (boopBarCurrent + 1e-4f >= boopShotCost && boopGun != null && boopGun.CanStartWindup())
+                {
+                    boopGun.FireBoopPull();
+                    boopBarCurrent -= boopShotCost;
+                    if (boopBarCurrent < 0f) boopBarCurrent = 0f;
+                    if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
+                }
+            }
+
             if (bulletUI != null) bulletUI.UpdateCooldown01(boopGun != null ? boopGun.CooldownWheel01 : 0f);
         }
         else
