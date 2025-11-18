@@ -9,6 +9,7 @@ public class RelaySwitch : MonoBehaviour, ISwitch
     {
         public MonoBehaviour source;
         public GameObject activeVisual;
+        public bool invertSourceState;
     }
 
     public enum RelayMode
@@ -21,6 +22,7 @@ public class RelaySwitch : MonoBehaviour, ISwitch
     [SerializeField] private RelayMode mode = RelayMode.AllOn;
     [SerializeField] private InputEntry[] inputs;
     [SerializeField] private bool requireAtLeastOneValidInput = true;
+    [SerializeField] private bool invertOutput;
 
     [Header("Progress UI")]
     [SerializeField] private Slider relayBar;
@@ -44,7 +46,8 @@ public class RelaySwitch : MonoBehaviour, ISwitch
 
     void Update()
     {
-        targetActive = EvaluateInputs();
+        bool inputResult = EvaluateInputs();
+        targetActive = invertOutput ? !inputResult : inputResult;
 
         if (targetActive != lastTargetActive)
         {
@@ -89,8 +92,11 @@ public class RelaySwitch : MonoBehaviour, ISwitch
 
                 if (entry.source is ISwitch sw)
                 {
+                    bool state = sw.IsActivated;
+                    if (entry.invertSourceState) state = !state;
+
                     hasValid = true;
-                    if (!sw.IsActivated)
+                    if (!state)
                         return false;
                 }
                 else
@@ -103,7 +109,7 @@ public class RelaySwitch : MonoBehaviour, ISwitch
             if (!hasValid && requireAtLeastOneValidInput) return false;
             return true;
         }
-        else // AnyOn
+        else
         {
             bool anyOn = false;
 
@@ -114,12 +120,20 @@ public class RelaySwitch : MonoBehaviour, ISwitch
 
                 if (entry.source is ISwitch sw)
                 {
+                    bool state = sw.IsActivated;
+                    if (entry.invertSourceState) state = !state;
+
                     hasValid = true;
-                    if (sw.IsActivated)
+                    if (state)
                     {
                         anyOn = true;
                         break;
                     }
+                }
+                else
+                {
+                    if (requireAtLeastOneValidInput)
+                        return false;
                 }
             }
 
@@ -157,28 +171,6 @@ public class RelaySwitch : MonoBehaviour, ISwitch
         }
     }
 
-    private void RefreshUI()
-    {
-        float t = Mathf.Clamp01(fill01);
-
-        if (relayBar != null)
-            relayBar.value = t;
-
-        if (lineSliders != null && lineSliders.Length > 0)
-        {
-            int n = lineSliders.Length;
-            float scaled = t * n;
-
-            for (int i = 0; i < n; i++)
-            {
-                var s = lineSliders[i];
-                if (s == null) continue;
-                float local = Mathf.Clamp01(scaled - i);
-                s.value = local;
-            }
-        }
-    }
-
     private void UpdateInputVisuals()
     {
         if (inputs == null) return;
@@ -192,10 +184,35 @@ public class RelaySwitch : MonoBehaviour, ISwitch
             bool active = false;
 
             if (entry.source is ISwitch sw)
-                active = sw.IsActivated;
+            {
+                bool state = sw.IsActivated;
+                if (entry.invertSourceState) state = !state;
+                active = state;
+            }
 
             if (entry.activeVisual.activeSelf != active)
                 entry.activeVisual.SetActive(active);
+        }
+    }
+
+    private void RefreshUI()
+    {
+        float t = Mathf.Clamp01(fill01);
+
+        if (relayBar != null)
+            relayBar.value = t;
+
+        if (lineSliders != null && lineSliders.Length > 0)
+        {
+            int n = lineSliders.Length;
+            float scaled = t * n;
+            for (int i = 0; i < n; i++)
+            {
+                var s = lineSliders[i];
+                if (s == null) continue;
+                float local = Mathf.Clamp01(scaled - i);
+                s.value = local;
+            }
         }
     }
 

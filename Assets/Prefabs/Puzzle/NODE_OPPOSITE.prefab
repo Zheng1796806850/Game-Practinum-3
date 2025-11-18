@@ -103,6 +103,7 @@ MonoBehaviour:
   mode: 0
   inputs: []
   requireAtLeastOneValidInput: 1
+  invertOutput: 1
   relayBar: {fileID: 0}
   lineSliders: []
   fillDurationSeconds: 0.5

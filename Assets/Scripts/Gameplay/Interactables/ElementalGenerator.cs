@@ -71,14 +71,15 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         {
             ChargePercent = 100f;
             targetChargePercent = 100f;
+            IsActivated = true;
         }
         else
         {
             ChargePercent = 0f;
             targetChargePercent = 0f;
+            IsActivated = false;
         }
 
-        IsActivated = false;
         EvaluateActivation();
         RefreshUI();
     }
@@ -95,7 +96,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         {
             if (!Mathf.Approximately(ChargePercent, targetChargePercent))
             {
-                float maxDelta = 100f / fullChargeDuration * Time.deltaTime;
+                float maxDelta = 100f / Mathf.Max(0.0001f, fullChargeDuration) * Time.deltaTime;
                 ChargePercent = Mathf.MoveTowards(ChargePercent, targetChargePercent, maxDelta);
                 EvaluateActivation();
                 RefreshUI();
@@ -123,7 +124,6 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         }
 
         float delta = magnitude * sign;
-        if (useReverseMode) delta = -delta;
 
         targetChargePercent = Mathf.Clamp(targetChargePercent + delta, 0f, 100f);
 
@@ -149,27 +149,15 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     {
         bool newActive = IsActivated;
 
-        if (!useReverseMode)
+        // 统一的判定逻辑：电量高于 activationPercent 时可以激活；
+        // 激活后电量低于 deactivationPercent 时熄灭
+        if (IsActivated)
         {
-            if (IsActivated)
-            {
-                if (ChargePercent < deactivationPercent) newActive = false;
-            }
-            else
-            {
-                if (ChargePercent >= activationPercent) newActive = true;
-            }
+            if (ChargePercent < deactivationPercent) newActive = false;
         }
         else
         {
-            if (IsActivated)
-            {
-                if (ChargePercent > activationPercent) newActive = false;
-            }
-            else
-            {
-                if (ChargePercent <= deactivationPercent) newActive = true;
-            }
+            if (ChargePercent >= activationPercent) newActive = true;
         }
 
         if (newActive && useSequentialMode && !ArePrerequisitesMet()) newActive = false;
@@ -232,11 +220,13 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             {
                 ChargePercent = 100f;
                 targetChargePercent = 100f;
+                IsActivated = true;
             }
             else
             {
                 ChargePercent = 0f;
                 targetChargePercent = 0f;
+                IsActivated = false;
             }
             RefreshUI();
         }

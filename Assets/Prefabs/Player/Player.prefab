@@ -1202,6 +1202,8 @@ MonoBehaviour:
   sharedFirePoint: {fileID: 3403806881188929036}
   firePointDistance: 1
   bulletUI: {fileID: 0}
+  requirePickupToUseGuns: 1
+  gunVisualRoot: {fileID: 4885297825840400540}
   flipSpriteByAim: 1
   invertFlipX: 0
   spritesToFlip:
@@ -1269,8 +1271,7 @@ MonoBehaviour:
   maxChargeTime: 2
   cooldown: 1
   baseFreezeDuration: 5
-  minEffectiveCharge01: 0.2
-  highTierThreshold01: 0.8
+  tierThreshold01: 0.5
   highTierDamageMultiplier: 1.5
   chargeParticlesPrefab: {fileID: 2658948090028686674, guid: a563dc24546aed1448659917578493df, type: 3}
   releaseParticlesPrefab: {fileID: 2658948090028686674, guid: 88c79d55fd4ce9b4fb7d3acb53ef9663, type: 3}
