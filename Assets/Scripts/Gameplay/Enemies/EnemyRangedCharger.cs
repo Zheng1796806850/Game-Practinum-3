@@ -34,6 +34,10 @@ public class EnemyRangedCharger : MonoBehaviour
     public LayerMask groundMask;
     public bool stopAtEdgeDuringChase = true;
 
+    [Header("Flip Control")]
+    public bool restrictFlipToGrounded = true;
+    public float flipCooldown = 0.1f;
+
     [Header("Detection")]
     public bool useRectDetection = true;
     public float detectLeft = 5f;
@@ -76,6 +80,7 @@ public class EnemyRangedCharger : MonoBehaviour
     private int turnIndex = 0;
     private int turnDir = 1;
     private bool blockedThisFrame = false;
+    private float lastFlipTime = -999f;
 
     void Awake()
     {
@@ -361,6 +366,13 @@ public class EnemyRangedCharger : MonoBehaviour
         return dist <= detectionRange;
     }
 
+    private bool IsGrounded()
+    {
+        if (groundCheck == null) return true;
+        RaycastHit2D hit = Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, groundMask);
+        return hit.collider != null;
+    }
+
     private bool CanMoveForward()
     {
         bool hasGround = true;
@@ -381,6 +393,15 @@ public class EnemyRangedCharger : MonoBehaviour
 
     private void Flip()
     {
+        if (restrictFlipToGrounded && !IsGrounded()) return;
+
+        if (flipCooldown > 0f)
+        {
+            if (Time.time - lastFlipTime < flipCooldown) return;
+        }
+
+        lastFlipTime = Time.time;
+
         facingRight = !facingRight;
         if (graphics != null)
         {

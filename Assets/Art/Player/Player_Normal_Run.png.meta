@@ -1,22 +1,25 @@
 fileFormatVersion: 2
-guid: 28a1dba606e518041a2a9d97e4e772e7
+guid: 769e0f2679d36e040b38c5518cd785ad
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4108333124764306383
-    second: RobotIdle_0
+      213: 9203713910810764828
+    second: Player_Normal_Run_0
   - first:
-      213: 5618838666857993717
-    second: RobotIdle_1
+      213: -8719447979957607635
+    second: Player_Normal_Run_1
   - first:
-      213: 8637000601859376473
-    second: RobotIdle_2
+      213: 1083093692084436316
+    second: Player_Normal_Run_2
   - first:
-      213: 8482484221167195235
-    second: RobotIdle_3
+      213: -8470654929800661185
+    second: Player_Normal_Run_3
   - first:
-      213: 535122695272812825
-    second: RobotIdle_4
+      213: -2385590417899339563
+    second: Player_Normal_Run_4
+  - first:
+      213: 7945871274231005490
+    second: Player_Normal_Run_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -112,13 +115,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RobotIdle_0
+      name: Player_Normal_Run_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 47
-        height: 47
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,20 +130,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 134f3773ac44cf6c0800000000000000
-      internalID: -4108333124764306383
+      spriteID: c16623cd9092abf70800000000000000
+      internalID: 9203713910810764828
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotIdle_1
+      name: Player_Normal_Run_1
       rect:
         serializedVersion: 2
-        x: 47
+        x: 51
         y: 0
-        width: 47
-        height: 47
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -149,20 +152,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5f5dc446fff1afd40800000000000000
-      internalID: 5618838666857993717
+      spriteID: d232125824c4ef680800000000000000
+      internalID: -8719447979957607635
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotIdle_2
+      name: Player_Normal_Run_2
       rect:
         serializedVersion: 2
-        x: 94
+        x: 102
         y: 0
-        width: 47
-        height: 47
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -171,20 +174,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 955c9ae594accd770800000000000000
-      internalID: 8637000601859376473
+      spriteID: c5db82779fbe70f00800000000000000
+      internalID: 1083093692084436316
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotIdle_3
+      name: Player_Normal_Run_3
       rect:
         serializedVersion: 2
-        x: 141
+        x: 153
         y: 0
-        width: 47
-        height: 47
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -193,20 +196,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 364d68ff476d7b570800000000000000
-      internalID: 8482484221167195235
+      spriteID: f37f1568830327a80800000000000000
+      internalID: -8470654929800661185
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotIdle_4
+      name: Player_Normal_Run_4
       rect:
         serializedVersion: 2
-        x: 188
+        x: 204
         y: 0
-        width: 47
-        height: 47
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -215,8 +218,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9115cf291432d6700800000000000000
-      internalID: 535122695272812825
+      spriteID: 5d0c881872ea4eed0800000000000000
+      internalID: -2385590417899339563
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Normal_Run_5
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 0
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 654a7b98018a7a44f83c724b6eac58d6
+      internalID: 7945871274231005490
       vertices: []
       indices: 
       edges: []
@@ -225,7 +250,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ccb863693c1db9048b20e978fa855d5b
+    spriteID: e3b6a322fdfa2e44482240e1ddfed783
     internalID: 0
     vertices: []
     indices: 
@@ -235,11 +260,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      RobotIdle_0: -4108333124764306383
-      RobotIdle_1: 5618838666857993717
-      RobotIdle_2: 8637000601859376473
-      RobotIdle_3: 8482484221167195235
-      RobotIdle_4: 535122695272812825
+      Player_Normal_Run_0: 9203713910810764828
+      Player_Normal_Run_1: -8719447979957607635
+      Player_Normal_Run_2: 1083093692084436316
+      Player_Normal_Run_3: -8470654929800661185
+      Player_Normal_Run_4: -2385590417899339563
+      Player_Normal_Run_5: 7945871274231005490
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

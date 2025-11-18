@@ -220,4 +220,10 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(center, size);
     }
+
+    public float InputX => inputX;
+    public bool IsGroundedNow => IsGrounded();
+    public bool IsJumping => isJumping;
+    public bool IsJumpFalling => isJumpFalling;
+    public float VerticalVelocity => rb != null ? rb.linearVelocity.y : 0f;
 }

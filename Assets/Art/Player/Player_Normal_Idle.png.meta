@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: 09e40d96fe5248c49825d5c08df044e3
+guid: 6c54714b13b46aa4da65d0e45c15fa8e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7535624989018848412
-    second: Enemy_Long_Normal 1_0
+      213: -327207371895019443
+    second: Player_Normal_Idle_0
+  - first:
+      213: 500280290885556503
+    second: Player_Normal_Idle_1
+  - first:
+      213: -8210497214772521163
+    second: Player_Normal_Idle_2
+  - first:
+      213: -7767447858647488195
+    second: Player_Normal_Idle_3
+  - first:
+      213: -572753448680343542
+    second: Player_Normal_Idle_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,12 +58,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 20
+  spritePixelsToUnits: 22
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Enemy_Long_Normal 1_0
+      name: Player_Normal_Idle_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 31
-        height: 38
+        width: 51
+        height: 52
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +127,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 46389f87ff41c6790800000000000000
-      internalID: -7535624989018848412
+      spriteID: d48ee4ef0a6857bf0800000000000000
+      internalID: -327207371895019443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Normal_Idle_1
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 0
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 719dc52264a51f600800000000000000
+      internalID: 500280290885556503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Normal_Idle_2
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 0
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5375624c8447e0e80800000000000000
+      internalID: -8210497214772521163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Normal_Idle_3
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 0
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d39a2f5835b743490800000000000000
+      internalID: -7767447858647488195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Normal_Idle_4
+      rect:
+        serializedVersion: 2
+        x: 204
+        y: 0
+        width: 51
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a083783e5cb2d08f0800000000000000
+      internalID: -572753448680343542
       vertices: []
       indices: 
       edges: []
@@ -135,7 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Enemy_Long_Normal 1_0: -7535624989018848412
+      Player_Normal_Idle_0: -327207371895019443
+      Player_Normal_Idle_1: 500280290885556503
+      Player_Normal_Idle_2: -8210497214772521163
+      Player_Normal_Idle_3: -7767447858647488195
+      Player_Normal_Idle_4: -572753448680343542
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,25 +1,31 @@
 fileFormatVersion: 2
-guid: 88a71e0650b3505428e2fd74b4f003c6
+guid: 35f68d0b4c7818b4daf6a87e08c70a8e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3075069338194219566
-    second: RobotRun_0
+      213: 8268000230740906808
+    second: Enemy_Long_Normal_Walk_0
   - first:
-      213: 1127687029696377094
-    second: RobotRun_1
+      213: -1660544913411673859
+    second: Enemy_Long_Normal_Walk_1
   - first:
-      213: -6486757542659522978
-    second: RobotRun_2
+      213: 1189304684685696487
+    second: Enemy_Long_Normal_Walk_2
   - first:
-      213: -1533857980068920112
-    second: RobotRun_3
+      213: -139600639661054329
+    second: Enemy_Long_Normal_Walk_3
   - first:
-      213: -4212763475116792649
-    second: RobotRun_4
+      213: -7406081033125186919
+    second: Enemy_Long_Normal_Walk_4
   - first:
-      213: 2493254003359244530
-    second: RobotRun_5
+      213: -3899400502669254979
+    second: Enemy_Long_Normal_Walk_5
+  - first:
+      213: 7834523760765637978
+    second: Enemy_Long_Normal_Walk_6
+  - first:
+      213: 4958025440973387712
+    second: Enemy_Long_Normal_Walk_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -66,7 +72,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 22
+  spritePixelsToUnits: 20
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -115,13 +121,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RobotRun_0
+      name: Enemy_Long_Normal_Walk_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -130,20 +136,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2ddec35bab82355d0800000000000000
-      internalID: -3075069338194219566
+      spriteID: 833d8247766ddb270800000000000000
+      internalID: 8268000230740906808
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotRun_1
+      name: Enemy_Long_Normal_Walk_1
       rect:
         serializedVersion: 2
-        x: 47
+        x: 31
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -152,20 +158,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6013ed6f06956af00800000000000000
-      internalID: 1127687029696377094
+      spriteID: df0f38ef23f84f8e0800000000000000
+      internalID: -1660544913411673859
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotRun_2
+      name: Enemy_Long_Normal_Walk_2
       rect:
         serializedVersion: 2
-        x: 94
+        x: 62
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -174,20 +180,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e5e71bd12686af5a0800000000000000
-      internalID: -6486757542659522978
+      spriteID: 7ed166c3f42418010800000000000000
+      internalID: 1189304684685696487
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotRun_3
+      name: Enemy_Long_Normal_Walk_3
       rect:
         serializedVersion: 2
-        x: 141
+        x: 93
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -196,20 +202,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0d4081a3b44a6bae0800000000000000
-      internalID: -1533857980068920112
+      spriteID: 786e59635f9001ef0800000000000000
+      internalID: -139600639661054329
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotRun_4
+      name: Enemy_Long_Normal_Walk_4
       rect:
         serializedVersion: 2
-        x: 188
+        x: 124
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -218,30 +224,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7b46ce680f14985c0800000000000000
-      internalID: -4212763475116792649
+      spriteID: 992b0da1a80583990800000000000000
+      internalID: -7406081033125186919
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RobotRun_5
+      name: Enemy_Long_Normal_Walk_5
       rect:
         serializedVersion: 2
-        x: 235
+        x: 155
         y: 0
-        width: 47
-        height: 47
+        width: 31
+        height: 40
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a9f1d3a54ec398746a8c5367e253e95d
-      internalID: 2493254003359244530
+      spriteID: dbe5b6917eb82e9c0800000000000000
+      internalID: -3899400502669254979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Enemy_Long_Normal_Walk_6
+      rect:
+        serializedVersion: 2
+        x: 186
+        y: 0
+        width: 31
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a551bc0f9d1d9bc60800000000000000
+      internalID: 7834523760765637978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Enemy_Long_Normal_Walk_7
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 0
+        width: 31
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c7719caed17ec440800000000000000
+      internalID: 4958025440973387712
       vertices: []
       indices: 
       edges: []
@@ -250,7 +300,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5235f13b0ec8b224799542ea38db0231
+    spriteID: ff4010ad68b8f9b47bd0eb1834661df3
     internalID: 0
     vertices: []
     indices: 
@@ -260,12 +310,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      RobotRun_0: -3075069338194219566
-      RobotRun_1: 1127687029696377094
-      RobotRun_2: -6486757542659522978
-      RobotRun_3: -1533857980068920112
-      RobotRun_4: -4212763475116792649
-      RobotRun_5: 2493254003359244530
+      Enemy_Long_Normal_Walk_0: 8268000230740906808
+      Enemy_Long_Normal_Walk_1: -1660544913411673859
+      Enemy_Long_Normal_Walk_2: 1189304684685696487
+      Enemy_Long_Normal_Walk_3: -139600639661054329
+      Enemy_Long_Normal_Walk_4: -7406081033125186919
+      Enemy_Long_Normal_Walk_5: -3899400502669254979
+      Enemy_Long_Normal_Walk_6: 7834523760765637978
+      Enemy_Long_Normal_Walk_7: 4958025440973387712
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
