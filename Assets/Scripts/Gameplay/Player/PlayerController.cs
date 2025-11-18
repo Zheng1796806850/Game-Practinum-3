@@ -32,11 +32,15 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 externalVelocity;
 
+    private KeyCode currentJumpKey = KeyCode.Space;
+    private const string JumpKeyPrefKey = "JumpKey";
+
     void Awake()
     {
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (capsule == null) capsule = GetComponent<CapsuleCollider2D>();
         externalVelocity = Vector2.zero;
+        RefreshJumpKeyFromSettings();
     }
 
     void Start()
@@ -46,13 +50,15 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        RefreshJumpKeyFromSettings();
+
         inputX = Input.GetAxisRaw(horizontalAxis);
         inputY = Input.GetAxisRaw(verticalAxis);
 
-        if (Input.GetButtonDown(jumpButton))
+        if (GetJumpPressed())
             lastJumpPressedTime = Time.time;
 
-        if (Input.GetButtonUp(jumpButton))
+        if (GetJumpReleased())
         {
             if (CanJumpCut()) isJumpCut = true;
         }
@@ -108,7 +114,7 @@ public class PlayerController : MonoBehaviour
         if (onGround)
             accelRate = Mathf.Abs(targetSpeed) > 0.01f ? data.runAccelAmount : data.runDeccelAmount;
         else
-            accelRate = (Mathf.Abs(targetSpeed) > 0.01f ? data.runAccelAmount * data.accelInAir : data.runDeccelAmount * data.deccelInAir);
+            accelRate = Mathf.Abs(targetSpeed) > 0.01f ? data.runAccelAmount * data.accelInAir : data.runDeccelAmount * data.deccelInAir;
 
         if ((isJumping || isJumpFalling) && Mathf.Abs(rb.linearVelocity.y) < data.jumpHangTimeThreshold)
         {
@@ -208,6 +214,25 @@ public class PlayerController : MonoBehaviour
         Vector2 size = new Vector2(bounds.size.x * 0.9f, extra);
         Collider2D hit = Physics2D.OverlapBox(center, size, 0f, groundMask);
         return hit != null;
+    }
+
+    private void RefreshJumpKeyFromSettings()
+    {
+        string value = PlayerPrefs.GetString(JumpKeyPrefKey, "Space");
+        if (value == "W")
+            currentJumpKey = KeyCode.W;
+        else
+            currentJumpKey = KeyCode.Space;
+    }
+
+    private bool GetJumpPressed()
+    {
+        return Input.GetKeyDown(currentJumpKey);
+    }
+
+    private bool GetJumpReleased()
+    {
+        return Input.GetKeyUp(currentJumpKey);
     }
 
     void OnDrawGizmosSelected()
