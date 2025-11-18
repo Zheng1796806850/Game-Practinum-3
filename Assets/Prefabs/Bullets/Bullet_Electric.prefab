@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.16, y: 0, z: 0}
-  m_LocalScale: {x: 0.09, y: 0.09, z: 0.09}
+  m_LocalScale: {x: 0.18, y: 0.18, z: 0.18}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -181,3 +181,7 @@ MonoBehaviour:
   onHitParticlePrefab: {fileID: 0}
   limitDamageToTag: 0
   damageOnlyTag: 
+  useSwitchTagFilter: 0
+  switchTag: 
+  activateSwitchOnHit: 0
+  deactivateSwitchOnHit: 0

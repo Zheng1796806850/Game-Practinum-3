@@ -244,7 +244,16 @@ public class BoopGun : MonoBehaviour
                 var proj = go.GetComponent<Projectile>();
                 Vector2 dir = ((Vector2)g.bounds.ClosestPoint(firePoint.position) - (Vector2)firePoint.position).normalized;
                 if (rbp != null) rbp.linearVelocity = dir * generatorProxySpeed;
-                if (proj != null) proj.Init(owner, 0f, dir * generatorProxySpeed);
+                if (proj != null)
+                {
+                    proj.projectileType = Projectile.ProjectileType.Fire;
+                    proj.Init(owner, 0f, dir * generatorProxySpeed);
+                }
+
+                var payload = go.GetComponent<GeneratorChargePayload>();
+                if (payload == null) payload = go.AddComponent<GeneratorChargePayload>();
+                payload.chargePercent = -1f;
+                payload.chargeSign = pullMode ? -1 : 1;
             }
         }
     }

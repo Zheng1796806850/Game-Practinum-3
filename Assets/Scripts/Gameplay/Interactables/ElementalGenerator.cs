@@ -4,7 +4,12 @@ using UnityEngine.UI;
 
 public class ElementalGenerator : MonoBehaviour, ISwitch
 {
-    public enum AcceptType { FireOnly, IceOnly, Any }
+    public enum AcceptType
+    {
+        FireOnly,
+        IceOnly,
+        Any
+    }
 
     [Header("Accept")]
     [SerializeField] private AcceptType accept = AcceptType.IceOnly;
@@ -15,8 +20,10 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     [Header("Charge (%)")]
     [Range(0f, 100f)][SerializeField] private float activationPercent = 100f;
     [Range(0f, 100f)][SerializeField] private float deactivationPercent = 80f;
-    [Range(0f, 100f)][SerializeField] private float decayPerSecondPercent = 5f;
     [Range(0f, 100f)][SerializeField] private float perHitChargePercent = 25f;
+
+    [Header("Charge Time")]
+    [SerializeField] private float fullChargeDuration = 0f;
 
     [Header("Hit Cooldown")]
     [SerializeField] private float retriggerCooldown = 0.05f;
@@ -36,14 +43,16 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
 
     private int lastHitFrame = -1;
     private float lastHitTime = -999f;
+    private float targetChargePercent;
 
-    void Awake()
+    private void Awake()
     {
         if (generatorBar != null)
         {
             generatorBar.maxValue = 1f;
             generatorBar.value = 0f;
         }
+
         if (lineSliders != null)
         {
             for (int i = 0; i < lineSliders.Length; i++)
@@ -61,10 +70,12 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         if (useReverseMode)
         {
             ChargePercent = 100f;
+            targetChargePercent = 100f;
         }
         else
         {
             ChargePercent = 0f;
+            targetChargePercent = 0f;
         }
 
         IsActivated = false;
@@ -72,7 +83,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         RefreshUI();
     }
 
-    void Update()
+    private void Update()
     {
         if (useSequentialMode && !ArePrerequisitesMet())
         {
@@ -80,30 +91,19 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             return;
         }
 
-        if (decayPerSecondPercent > 0f)
+        if (fullChargeDuration > 0f)
         {
-            if (!useReverseMode)
+            if (!Mathf.Approximately(ChargePercent, targetChargePercent))
             {
-                if (ChargePercent > 0f)
-                {
-                    ChargePercent = Mathf.Max(0f, ChargePercent - decayPerSecondPercent * Time.deltaTime);
-                    EvaluateActivation();
-                    RefreshUI();
-                }
-            }
-            else
-            {
-                if (ChargePercent < 100f)
-                {
-                    ChargePercent = Mathf.Min(100f, ChargePercent + decayPerSecondPercent * Time.deltaTime);
-                    EvaluateActivation();
-                    RefreshUI();
-                }
+                float maxDelta = 100f / fullChargeDuration * Time.deltaTime;
+                ChargePercent = Mathf.MoveTowards(ChargePercent, targetChargePercent, maxDelta);
+                EvaluateActivation();
+                RefreshUI();
             }
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.TryGetComponent<Projectile>(out var proj)) return;
         if (Time.frameCount == lastHitFrame) return;
@@ -111,16 +111,28 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         if (!Accepts(proj)) return;
         if (useSequentialMode && !ArePrerequisitesMet()) return;
 
-        float add = perHitChargePercent;
-        var payload = other.GetComponent<GeneratorChargePayload>();
-        if (payload != null && payload.chargePercent >= 0f) add = payload.chargePercent;
+        float magnitude = perHitChargePercent;
+        int sign = 1;
 
-        float delta = add;
+        var payload = other.GetComponent<GeneratorChargePayload>();
+        if (payload != null)
+        {
+            if (payload.chargePercent >= 0f)
+                magnitude = payload.chargePercent;
+            sign = payload.chargeSign >= 0 ? 1 : -1;
+        }
+
+        float delta = magnitude * sign;
         if (useReverseMode) delta = -delta;
 
-        ChargePercent = Mathf.Clamp(ChargePercent + delta, 0f, 100f);
-        EvaluateActivation();
-        RefreshUI();
+        targetChargePercent = Mathf.Clamp(targetChargePercent + delta, 0f, 100f);
+
+        if (fullChargeDuration <= 0f)
+        {
+            ChargePercent = targetChargePercent;
+            EvaluateActivation();
+            RefreshUI();
+        }
 
         lastHitFrame = Time.frameCount;
         lastHitTime = Time.time;
@@ -180,10 +192,13 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             OnActivatedChanged?.Invoke(false);
             changed = true;
         }
-        if (drainOnPrerequisiteLost && (ChargePercent > 0f || changed))
+
+        if (drainOnPrerequisiteLost && (ChargePercent > 0f || targetChargePercent > 0f || changed))
         {
             ChargePercent = 0f;
+            targetChargePercent = 0f;
         }
+
         RefreshUI();
     }
 
@@ -211,7 +226,20 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     private void OnValidate()
     {
         ClampThresholds();
-        RefreshUI();
+        if (!Application.isPlaying)
+        {
+            if (useReverseMode)
+            {
+                ChargePercent = 100f;
+                targetChargePercent = 100f;
+            }
+            else
+            {
+                ChargePercent = 0f;
+                targetChargePercent = 0f;
+            }
+            RefreshUI();
+        }
     }
 
     private void ClampThresholds()
@@ -219,12 +247,14 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         activationPercent = Mathf.Clamp(activationPercent, 0f, 100f);
         deactivationPercent = Mathf.Clamp(deactivationPercent, 0f, activationPercent);
         perHitChargePercent = Mathf.Clamp(perHitChargePercent, 0f, 100f);
-        decayPerSecondPercent = Mathf.Max(0f, decayPerSecondPercent);
+        if (fullChargeDuration < 0f) fullChargeDuration = 0f;
     }
 
     private bool ArePrerequisitesMet()
     {
+        if (!useSequentialMode) return true;
         if (prerequisites == null || prerequisites.Length == 0) return true;
+
         for (int i = 0; i < prerequisites.Length; i++)
         {
             var mb = prerequisites[i];
@@ -238,6 +268,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
                 return false;
             }
         }
+
         return true;
     }
 }

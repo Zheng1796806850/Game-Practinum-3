@@ -194,7 +194,7 @@ MonoBehaviour:
   requireAtLeastOneValidInput: 1
   relayBar: {fileID: 0}
   lineSliders: []
-  fillDurationSeconds: 1.25
+  fillDurationSeconds: 0.5
 --- !u!1 &6934984688591423075
 GameObject:
   m_ObjectHideFlags: 0

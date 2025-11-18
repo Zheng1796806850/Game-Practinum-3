@@ -105,4 +105,4 @@ MonoBehaviour:
   requireAtLeastOneValidInput: 1
   relayBar: {fileID: 0}
   lineSliders: []
-  fillDurationSeconds: 1.25
+  fillDurationSeconds: 0.5

@@ -6,11 +6,10 @@ public class ElectricGun : MonoBehaviour
     public Weapon weapon;
     public Transform firePoint;
     public GameObject owner;
-    public float maxChargeTime = 5f;
+    public float maxChargeTime = 1.5f;
     public float cooldown = 2f;
     public float baseFreezeDuration = 3f;
-    public float minEffectiveCharge01 = 0.2f;
-    public float highTierThreshold01 = 0.8f;
+    [Range(0f, 1f)] public float tierThreshold01 = 0.5f;
     public float highTierDamageMultiplier = 1.5f;
     public ParticleSystem chargeParticlesPrefab;
     public ParticleSystem releaseParticlesPrefab;
@@ -128,7 +127,7 @@ public class ElectricGun : MonoBehaviour
     public void ReleaseAndFire()
     {
         if (!isCharging) return;
-        float k = Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime));
+        float charge01 = Mathf.Clamp01(chargeT / Mathf.Max(0.0001f, maxChargeTime));
 
         if (chargeAudio != null && chargeAudio.isPlaying) chargeAudio.Stop();
 
@@ -138,9 +137,7 @@ public class ElectricGun : MonoBehaviour
             chargeInstance = null;
         }
 
-        bool isChargedShot = k >= minEffectiveCharge01;
-
-        FireShot(isChargedShot, k);
+        FireShot(charge01);
 
         if (releaseParticlesPrefab != null && firePoint != null)
         {
@@ -163,45 +160,57 @@ public class ElectricGun : MonoBehaviour
         StartCoroutine(CooldownTimer());
     }
 
-    private void FireShot(bool chargedShot, float charge01)
+    private void FireShot(float charge01)
     {
         if (weapon == null) return;
 
         float baseDamage = weapon != null ? weapon.damage : 1f;
-        bool highTier = chargedShot && charge01 >= highTierThreshold01;
+        bool highTier = charge01 >= tierThreshold01;
 
         float damageToUse;
-        float payloadPercent;
         float freezeDuration;
 
-        if (!chargedShot)
+        if (charge01 <= 0f)
         {
             damageToUse = baseDamage;
-            payloadPercent = 0f;
             freezeDuration = 0f;
         }
         else
         {
-            damageToUse = highTier ? baseDamage * highTierDamageMultiplier : baseDamage * charge01;
-            payloadPercent = highTier ? 100f : Mathf.Clamp01(charge01) * 100f;
-            freezeDuration = Mathf.Max(0f, baseFreezeDuration * Mathf.Clamp01(charge01));
+            if (!highTier)
+            {
+                damageToUse = baseDamage;
+            }
+            else
+            {
+                damageToUse = baseDamage * highTierDamageMultiplier;
+            }
+            freezeDuration = Mathf.Max(0f, baseFreezeDuration * charge01);
         }
 
         if (weapon.TryFireReturnProjectile(aimDir, damageToUse, out var proj, out var go))
         {
             if (proj != null)
             {
-                proj.projectileType = chargedShot ? Projectile.ProjectileType.Ice : Projectile.ProjectileType.Normal;
+                proj.projectileType = charge01 > 0f ? Projectile.ProjectileType.Ice : Projectile.ProjectileType.Normal;
                 proj.iceFreezeDuration = freezeDuration;
 
                 proj.useSwitchTagFilter = useSwitchTagFilter;
                 proj.switchTag = switchTag;
-                proj.activateSwitchOnHit = !chargedShot;
-                proj.deactivateSwitchOnHit = chargedShot;
+
+                bool activateMode = charge01 < tierThreshold01;
+                if (charge01 <= 0f)
+                {
+                    activateMode = true;
+                }
+
+                proj.activateSwitchOnHit = activateMode;
+                proj.deactivateSwitchOnHit = !activateMode;
 
                 var payload = go.GetComponent<GeneratorChargePayload>();
                 if (payload == null) payload = go.AddComponent<GeneratorChargePayload>();
-                payload.chargePercent = payloadPercent;
+                payload.chargePercent = -1f;
+                payload.chargeSign = activateMode ? 1 : -1;
             }
         }
     }
