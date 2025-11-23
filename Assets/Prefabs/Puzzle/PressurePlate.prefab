@@ -553,7 +553,7 @@ MonoBehaviour:
   activationPercent: 99
   deactivationPercent: 1
   decayPerSecondPercent: 3
-  secondsFrom0To100: 3
+  secondsFrom0To100: 1
   plateBar: {fileID: 0}
   lineSliders:
   - {fileID: 0}

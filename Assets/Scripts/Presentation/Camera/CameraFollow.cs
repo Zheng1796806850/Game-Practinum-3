@@ -58,6 +58,10 @@ public class CameraFollow : MonoBehaviour
     private int currentRefResolutionY;
     private float zoomAspectRatio = 16f / 9f;
 
+    private const string UseMouseLookOffsetPrefKey = "UseMouseLookOffset";
+    private const string MouseOffsetLerpPrefKey = "MouseOffsetLerp";
+    private const string EnableScrollZoomPrefKey = "EnableScrollZoom";
+
     private void Awake()
     {
         cam = GetComponent<Camera>();
@@ -87,6 +91,8 @@ public class CameraFollow : MonoBehaviour
             pixelPerfectCamera.refResolutionY = currentRefResolutionY;
             pixelPerfectCamera.refResolutionX = Mathf.RoundToInt(currentRefResolutionY * zoomAspectRatio);
         }
+
+        LoadSettingsFromPlayerPrefs();
     }
 
     private void Update()
@@ -96,7 +102,7 @@ public class CameraFollow : MonoBehaviour
 
     private void FixedUpdate()
     {
-        var effectiveMode = hasLocalOverride ? localMode : mode;
+        CameraMode effectiveMode = hasLocalOverride ? localMode : mode;
         switch (effectiveMode)
         {
             case CameraMode.FollowTarget:
@@ -195,7 +201,7 @@ public class CameraFollow : MonoBehaviour
     {
         for (int i = 0; i < (cameraPairs != null ? cameraPairs.Length : 0); i++)
         {
-            var p = cameraPairs[i];
+            CameraTriggerPair p = cameraPairs[i];
             if (p != null && p.triggerObject == trigger)
             {
                 if (p.cameraPoint != null)
@@ -212,7 +218,7 @@ public class CameraFollow : MonoBehaviour
                 else
                 {
                     hasLocalOverride = true;
-                    localMode = (p.modeOverride == PairMode.FollowTarget) ? CameraMode.FollowTarget : CameraMode.FixedPoints;
+                    localMode = p.modeOverride == PairMode.FollowTarget ? CameraMode.FollowTarget : CameraMode.FixedPoints;
                 }
                 return;
             }
@@ -222,5 +228,15 @@ public class CameraFollow : MonoBehaviour
     public void ClearLocalOverride()
     {
         hasLocalOverride = false;
+    }
+
+    private void LoadSettingsFromPlayerPrefs()
+    {
+        int useOffsetInt = PlayerPrefs.GetInt(UseMouseLookOffsetPrefKey, useMouseLookOffset ? 1 : 0);
+        useMouseLookOffset = useOffsetInt != 0;
+        float lerp = PlayerPrefs.GetFloat(MouseOffsetLerpPrefKey, mouseOffsetLerp);
+        mouseOffsetLerp = Mathf.Clamp01(lerp);
+        int enableScrollInt = PlayerPrefs.GetInt(EnableScrollZoomPrefKey, enableScrollZoom ? 1 : 0);
+        enableScrollZoom = enableScrollInt != 0;
     }
 }
