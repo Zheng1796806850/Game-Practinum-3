@@ -16,10 +16,20 @@ public class DoorLinearOpener : MonoBehaviour
     [SerializeField] private float openSpeed = 3f;
     [SerializeField] private float closeSpeed = 3f;
 
+    [Header("Editor Preview")]
+    [SerializeField] private float previewDuration = 1f;
+    [SerializeField] private float holdDuration = 1f;
+
     public bool IsOpen { get; private set; }
 
     private Vector3 startPos;
     private Vector3 targetPos;
+
+    public float OpenDistance => openDistance;
+    public Vector3 DirectionVector => GetDirectionVector();
+    public float PreviewDuration => previewDuration;
+
+    public float HoldDuration => holdDuration;
 
     void Awake()
     {
@@ -59,5 +69,15 @@ public class DoorLinearOpener : MonoBehaviour
             case OpenDirection.Right: return Vector3.right;
             default: return Vector3.up;
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 s = Application.isPlaying ? startPos : transform.position;
+        Vector3 t = s + GetDirectionVector() * openDistance;
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(s, t);
+        Gizmos.DrawWireSphere(s, 0.1f);
+        Gizmos.DrawWireSphere(t, 0.1f);
     }
 }

@@ -32,6 +32,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     [SerializeField] private float captureFreezeDuration = 9999f;
     [SerializeField] private Transform captureAnchor;
     [SerializeField] private bool parentCapturedEnemyToAnchor = true;
+    [SerializeField] private bool allowPlayerToActivateEnemyPlate = false;
 
     [Header("Charge (%)")]
     [Range(0f, 100f)][SerializeField] private float activationPercent = 100f;
@@ -159,7 +160,9 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         }
         else
         {
-            return capturedRoot != null;
+            if (capturedRoot != null) return true;
+            if (allowPlayerToActivateEnemyPlate && qualifyingOccupants > 0) return true;
+            return false;
         }
     }
 
@@ -270,13 +273,17 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     private bool IsPlayerOrEnemy(Collider2D c)
     {
         if (c == null) return false;
+
+        bool isPlayer = c.CompareTag("Player") || c.GetComponentInParent<PlayerController>() != null;
+        bool isEnemy = c.CompareTag("Enemy") || c.GetComponentInParent<Enemy>() != null;
+
+        if (plateType == PlateType.EnemySpecific)
+        {
+            bool playerValid = allowPlayerToActivateEnemyPlate && isPlayer;
+            return playerValid;
+        }
+
         if (!allowPlayer && !allowEnemies) return false;
-
-        bool isPlayer = false;
-        bool isEnemy = false;
-
-        if (c.CompareTag("Player") || c.GetComponentInParent<PlayerController>() != null) isPlayer = true;
-        if (c.CompareTag("Enemy") || c.GetComponentInParent<Enemy>() != null) isEnemy = true;
 
         if (isPlayer && !allowPlayer) isPlayer = false;
         if (isEnemy && !allowEnemies) isEnemy = false;

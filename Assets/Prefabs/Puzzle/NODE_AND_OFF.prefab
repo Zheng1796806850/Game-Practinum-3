@@ -190,8 +190,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 0
-  inputs: []
+  inputs:
+  - source: {fileID: 0}
+    activeVisual: {fileID: 8489015495969759146}
+    invertSourceState: 0
+  - source: {fileID: 0}
+    activeVisual: {fileID: 2697536734640966431}
+    invertSourceState: 0
   requireAtLeastOneValidInput: 1
+  invertOutput: 0
   relayBar: {fileID: 0}
   lineSliders: []
   fillDurationSeconds: 0.5

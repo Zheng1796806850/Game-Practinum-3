@@ -29,7 +29,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     [SerializeField] private float retriggerCooldown = 0.05f;
 
     [Header("UI")]
-    [SerializeField] private Slider generatorBar;
+    [SerializeField] private Slider[] generatorBars;
     [SerializeField] private Slider[] lineSliders;
 
     [Header("Sequence")]
@@ -47,10 +47,16 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
 
     private void Awake()
     {
-        if (generatorBar != null)
+        if (generatorBars != null)
         {
-            generatorBar.maxValue = 1f;
-            generatorBar.value = 0f;
+            for (int i = 0; i < generatorBars.Length; i++)
+            {
+                if (generatorBars[i] != null)
+                {
+                    generatorBars[i].maxValue = 1f;
+                    generatorBars[i].value = 0f;
+                }
+            }
         }
 
         if (lineSliders != null)
@@ -149,8 +155,6 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     {
         bool newActive = IsActivated;
 
-        // 统一的判定逻辑：电量高于 activationPercent 时可以激活；
-        // 激活后电量低于 deactivationPercent 时熄灭
         if (IsActivated)
         {
             if (ChargePercent < deactivationPercent) newActive = false;
@@ -174,6 +178,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     private void ForceDeactivateDueToPrereqLost()
     {
         bool changed = false;
+
         if (IsActivated)
         {
             IsActivated = false;
@@ -194,8 +199,15 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     {
         float t = Mathf.Clamp01(ChargePercent / 100f);
 
-        if (generatorBar != null)
-            generatorBar.value = t;
+        if (generatorBars != null && generatorBars.Length > 0)
+        {
+            for (int i = 0; i < generatorBars.Length; i++)
+            {
+                var s = generatorBars[i];
+                if (s == null) continue;
+                s.value = t;
+            }
+        }
 
         if (lineSliders != null && lineSliders.Length > 0)
         {
