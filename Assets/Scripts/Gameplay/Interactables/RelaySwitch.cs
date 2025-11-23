@@ -25,7 +25,7 @@ public class RelaySwitch : MonoBehaviour, ISwitch
     [SerializeField] private bool invertOutput;
 
     [Header("Progress UI")]
-    [SerializeField] private Slider relayBar;
+    [SerializeField] private Slider[] relayBars;
     [SerializeField] private Slider[] lineSliders;
     [SerializeField] private float fillDurationSeconds = 0.5f;
 
@@ -59,7 +59,6 @@ public class RelaySwitch : MonoBehaviour, ISwitch
                     OnActivatedChanged?.Invoke(false);
                 }
             }
-
             lastTargetActive = targetActive;
         }
 
@@ -199,8 +198,15 @@ public class RelaySwitch : MonoBehaviour, ISwitch
     {
         float t = Mathf.Clamp01(fill01);
 
-        if (relayBar != null)
-            relayBar.value = t;
+        if (relayBars != null && relayBars.Length > 0)
+        {
+            for (int i = 0; i < relayBars.Length; i++)
+            {
+                var s = relayBars[i];
+                if (s == null) continue;
+                s.value = t;
+            }
+        }
 
         if (lineSliders != null && lineSliders.Length > 0)
         {

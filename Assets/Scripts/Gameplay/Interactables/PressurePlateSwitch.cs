@@ -89,17 +89,18 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     void Awake()
     {
         if (!allPlates.Contains(this)) allPlates.Add(this);
-        PrepareVisualCache();
         InitUI();
-        ClampThresholds();
+        CacheVisual();
         RefreshIndicator();
-        if (captureAnchor == null) captureAnchor = transform;
         AutoFindDetectionAreas();
     }
 
     void OnEnable()
     {
         if (!allPlates.Contains(this)) allPlates.Add(this);
+        RefreshUI();
+        RefreshIndicator();
+        AutoFindDetectionAreas();
     }
 
     void OnDisable()
@@ -127,17 +128,16 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
                 if (IsActivated)
                 {
                     IsActivated = false;
-                    OnActivatedChanged?.Invoke(false);
+                    OnActivatedChanged?.Invoke(IsActivated);
                     RefreshIndicator();
                 }
-                RefreshUI();
             }
-
-            UpdatePlateVisual(hideWhenPlayerOrEnemyOnTop && qualifyingOccupants > 0);
+            RefreshUI();
+            UpdatePlateVisual(false);
             return;
         }
 
-        if (hasActiveOccupant && secondsFrom0To100 > 0f)
+        if (hasActiveOccupant)
         {
             float perSecond = 100f / Mathf.Max(0.0001f, secondsFrom0To100);
             ChargePercent = Mathf.Clamp(ChargePercent + perSecond * Time.deltaTime, 0f, 100f);
@@ -175,9 +175,16 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
             qualifyingOccupants++;
         }
 
-        if (area == enemyDetectionArea && plateType == PlateType.EnemySpecific && IsAllowedEnemy(other))
+        if (area == enemyDetectionArea && plateType == PlateType.EnemySpecific)
         {
-            overlappedEnemyCandidates.Add(other);
+            if (IsAllowedEnemy(other))
+            {
+                overlappedEnemyCandidates.Add(other);
+            }
+            else
+            {
+                TryReleaseCapturedEnemyByProjectile(other);
+            }
         }
     }
 
@@ -198,6 +205,34 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
                 ReleaseCapturedEnemyInternal(false);
             }
         }
+    }
+
+    private void TryReleaseCapturedEnemyByProjectile(Collider2D other)
+    {
+        if (capturedRoot == null) return;
+        if (other == null) return;
+
+        var proj = other.GetComponentInParent<Projectile>();
+        if (proj == null) return;
+
+        var payload = other.GetComponent<GeneratorChargePayload>();
+        if (payload == null)
+        {
+            payload = other.GetComponentInParent<GeneratorChargePayload>();
+        }
+
+        bool isReleaseShot = false;
+        if (proj.projectileType == Projectile.ProjectileType.Ice)
+        {
+            if (payload != null && payload.chargeSign < 0)
+            {
+                isReleaseShot = true;
+            }
+        }
+
+        if (!isReleaseShot) return;
+
+        ReleaseCapturedEnemyInternal(false);
     }
 
     private void EvaluateActivation()
@@ -235,9 +270,12 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         {
             for (int i = 0; i < lineSliders.Length; i++)
             {
-                if (lineSliders[i] == null) continue;
-                lineSliders[i].maxValue = 1f;
-                lineSliders[i].value = 0f;
+                var s = lineSliders[i];
+                if (s != null)
+                {
+                    s.maxValue = 1f;
+                    s.value = 0f;
+                }
             }
         }
     }
@@ -258,122 +296,63 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
             {
                 var s = lineSliders[i];
                 if (s == null) continue;
-                float local = Mathf.Clamp01(scaled - i);
-                s.value = local;
+
+                float segment = Mathf.Clamp01(scaled - i);
+                s.value = segment;
             }
         }
     }
 
     private void RefreshIndicator()
     {
-        if (indicator != null)
-            indicator.color = IsActivated ? activeColor : inactiveColor;
+        if (indicator == null) return;
+        indicator.color = IsActivated ? activeColor : inactiveColor;
     }
 
-    private bool IsPlayerOrEnemy(Collider2D c)
+    private void CacheVisual()
     {
-        if (c == null) return false;
-
-        bool isPlayer = c.CompareTag("Player") || c.GetComponentInParent<PlayerController>() != null;
-        bool isEnemy = c.CompareTag("Enemy") || c.GetComponentInParent<Enemy>() != null;
-
-        if (plateType == PlateType.EnemySpecific)
+        if (hideMode == HideMode.DisableTilemapRenderer && targetTilemap != null)
         {
-            bool playerValid = allowPlayerToActivateEnemyPlate && isPlayer;
-            return playerValid;
+            cachedTilemapRenderer = targetTilemap.GetComponent<TilemapRenderer>();
         }
 
-        if (!allowPlayer && !allowEnemies) return false;
-
-        if (isPlayer && !allowPlayer) isPlayer = false;
-        if (isEnemy && !allowEnemies) isEnemy = false;
-
-        return isPlayer || isEnemy;
-    }
-
-    private bool IsAllowedEnemy(Collider2D c)
-    {
-        if (c == null) return false;
-        if (plateType != PlateType.EnemySpecific) return false;
-
-        if (!string.IsNullOrEmpty(requiredEnemyTag))
+        if (hideMode == HideMode.ClearSpecificCells && targetTilemap != null)
         {
-            if (c.CompareTag(requiredEnemyTag)) return true;
-            if (c.attachedRigidbody != null && c.attachedRigidbody.CompareTag(requiredEnemyTag)) return true;
-            if (c.transform.root != null && c.transform.root.CompareTag(requiredEnemyTag)) return true;
-            return false;
-        }
-
-        if (c.CompareTag("Enemy")) return true;
-        if (c.GetComponentInParent<Enemy>() != null) return true;
-        return false;
-    }
-
-    private bool ArePrerequisitesMet()
-    {
-        if (prerequisites == null || prerequisites.Length == 0) return true;
-        for (int i = 0; i < prerequisites.Length; i++)
-        {
-            var mb = prerequisites[i];
-            if (mb == null) return false;
-            if (mb is ISwitch sw)
+            if ((cellsToToggle == null || cellsToToggle.Length == 0) && autoUseCellFromTransform)
             {
-                if (!sw.IsActivated) return false;
+                Vector3Int cell = targetTilemap.WorldToCell(transform.position);
+                cellsToToggle = new[] { cell };
             }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 
-    private void PrepareVisualCache()
-    {
-        if (hideMode == HideMode.DisableTilemapRenderer)
-        {
-            if (targetTilemap != null)
-                cachedTilemapRenderer = targetTilemap.GetComponent<TilemapRenderer>();
-        }
-        else if (hideMode == HideMode.ClearSpecificCells)
-        {
-            if (targetTilemap != null)
+            if (cellsToToggle != null && cellsToToggle.Length > 0)
             {
-                if ((cellsToToggle == null || cellsToToggle.Length == 0) && autoUseCellFromTransform)
+                cachedTiles = new TileBase[cellsToToggle.Length];
+                for (int i = 0; i < cellsToToggle.Length; i++)
                 {
-                    var cell = targetTilemap.WorldToCell(transform.position);
-                    cellsToToggle = new[] { cell };
-                }
-                if (cellsToToggle != null && cellsToToggle.Length > 0)
-                {
-                    cachedTiles = new TileBase[cellsToToggle.Length];
-                    for (int i = 0; i < cellsToToggle.Length; i++)
-                    {
-                        cachedTiles[i] = targetTilemap.GetTile(cellsToToggle[i]);
-                    }
+                    cachedTiles[i] = targetTilemap.GetTile(cellsToToggle[i]);
                 }
             }
+        }
+
+        if (hideMode == HideMode.DisableGameObject && visualGameObjectOverride == null)
+        {
+            visualGameObjectOverride = gameObject;
         }
     }
 
     private void UpdatePlateVisual(bool shouldHide)
     {
-        if (hideMode == HideMode.None) return;
-        if (shouldHide)
+        if (shouldHide == visualHidden) return;
+
+        visualHidden = shouldHide;
+
+        if (visualHidden)
         {
-            if (!visualHidden)
-            {
-                visualHidden = true;
-                HideVisual();
-            }
+            HideVisual();
         }
         else
         {
-            if (visualHidden)
-            {
-                visualHidden = false;
-                ShowVisual();
-            }
+            ShowVisual();
         }
     }
 
@@ -417,20 +396,64 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         }
     }
 
-    private void ClampThresholds()
+    private bool IsPlayerOrEnemy(Collider2D c)
     {
-        activationPercent = Mathf.Clamp(activationPercent, 0f, 100f);
-        deactivationPercent = Mathf.Clamp(deactivationPercent, 0f, activationPercent);
-        decayPerSecondPercent = Mathf.Max(0f, decayPerSecondPercent);
-        secondsFrom0To100 = Mathf.Max(0.0001f, secondsFrom0To100);
+        if (c == null) return false;
+
+        bool isPlayer = false;
+        bool isEnemy = false;
+
+        if (c.CompareTag("Player") || c.GetComponentInParent<PlayerController>() != null)
+        {
+            isPlayer = true;
+        }
+
+        if (c.CompareTag("Enemy") || c.GetComponentInParent<Enemy>() != null)
+        {
+            isEnemy = true;
+        }
+
+        if (isPlayer && !allowPlayer) isPlayer = false;
+        if (isEnemy && !allowEnemies) isEnemy = false;
+
+        return isPlayer || isEnemy;
     }
 
-    private void OnValidate()
+    private bool IsAllowedEnemy(Collider2D c)
     {
-        ClampThresholds();
-        RefreshUI();
-        RefreshIndicator();
-        AutoFindDetectionAreas();
+        if (c == null) return false;
+        if (plateType != PlateType.EnemySpecific) return false;
+
+        if (!string.IsNullOrEmpty(requiredEnemyTag))
+        {
+            if (c.CompareTag(requiredEnemyTag)) return true;
+            if (c.attachedRigidbody != null && c.attachedRigidbody.CompareTag(requiredEnemyTag)) return true;
+            if (c.transform.root != null && c.transform.root.CompareTag(requiredEnemyTag)) return true;
+            return false;
+        }
+
+        if (c.CompareTag("Enemy")) return true;
+        if (c.GetComponentInParent<Enemy>() != null) return true;
+        return false;
+    }
+
+    private bool ArePrerequisitesMet()
+    {
+        if (prerequisites == null || prerequisites.Length == 0) return true;
+        for (int i = 0; i < prerequisites.Length; i++)
+        {
+            var mb = prerequisites[i];
+            if (mb == null) return false;
+            if (mb is ISwitch sw)
+            {
+                if (!sw.IsActivated) return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void AutoFindDetectionAreas()
@@ -518,13 +541,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
 
         capturedOriginalParent = root.parent;
 
-        if (captureAnchor != null && parentCapturedEnemyToAnchor)
-        {
-            root.position = captureAnchor.position;
-            root.rotation = captureAnchor.rotation;
-            root.parent = captureAnchor;
-        }
-        else if (captureAnchor != null)
+        if (parentCapturedEnemyToAnchor && captureAnchor != null)
         {
             root.position = captureAnchor.position;
         }

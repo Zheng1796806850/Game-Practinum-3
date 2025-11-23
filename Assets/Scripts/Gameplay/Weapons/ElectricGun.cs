@@ -165,12 +165,13 @@ public class ElectricGun : MonoBehaviour
         if (weapon == null) return;
 
         float baseDamage = weapon != null ? weapon.damage : 1f;
-        bool highTier = charge01 >= tierThreshold01;
+        bool hasCharge = charge01 > 0f;
+        bool highTier = hasCharge && charge01 >= tierThreshold01;
 
         float damageToUse;
         float freezeDuration;
 
-        if (charge01 <= 0f)
+        if (!hasCharge)
         {
             damageToUse = baseDamage;
             freezeDuration = 0f;
@@ -180,29 +181,29 @@ public class ElectricGun : MonoBehaviour
             if (!highTier)
             {
                 damageToUse = baseDamage;
+                freezeDuration = Mathf.Max(0f, baseFreezeDuration * charge01);
             }
             else
             {
                 damageToUse = baseDamage * highTierDamageMultiplier;
+                freezeDuration = 0f;
             }
-            freezeDuration = Mathf.Max(0f, baseFreezeDuration * charge01);
         }
 
         if (weapon.TryFireReturnProjectile(aimDir, damageToUse, out var proj, out var go))
         {
             if (proj != null)
             {
-                proj.projectileType = charge01 > 0f ? Projectile.ProjectileType.Ice : Projectile.ProjectileType.Normal;
+                proj.projectileType = hasCharge ? Projectile.ProjectileType.Ice : Projectile.ProjectileType.Normal;
                 proj.iceFreezeDuration = freezeDuration;
+
+                proj.clearFreezeOnHit = hasCharge && highTier;
+                proj.releaseCapturedEnemyOnHit = hasCharge && highTier;
 
                 proj.useSwitchTagFilter = useSwitchTagFilter;
                 proj.switchTag = switchTag;
 
-                bool activateMode = charge01 < tierThreshold01;
-                if (charge01 <= 0f)
-                {
-                    activateMode = true;
-                }
+                bool activateMode = !highTier;
 
                 proj.activateSwitchOnHit = activateMode;
                 proj.deactivateSwitchOnHit = !activateMode;

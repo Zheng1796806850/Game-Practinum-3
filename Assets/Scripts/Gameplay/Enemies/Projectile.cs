@@ -21,6 +21,10 @@ public class Projectile : MonoBehaviour
     public float bonusDamageIfTargetFrozen = 0f;
     public GameObject onHitParticlePrefab;
 
+    [Header("Freeze / Release")]
+    public bool clearFreezeOnHit = false;
+    public bool releaseCapturedEnemyOnHit = false;
+
     [Header("Target Filter")]
     public bool limitDamageToTag = false;
     public string damageOnlyTag = "";
@@ -73,13 +77,21 @@ public class Projectile : MonoBehaviour
             if (otherRoot == owner || otherRoot.transform.root == owner.transform.root) return;
         }
 
+        if (releaseCapturedEnemyOnHit)
+        {
+            PressurePlateSwitch.NotifyEnemyBoopedPull(other);
+        }
+
         DamageType dtype = DamageType.Normal;
         if (projectileType == ProjectileType.Fire) dtype = DamageType.Fire;
         else if (projectileType == ProjectileType.Ice) dtype = DamageType.Ice;
 
         float dmg = baseDamage;
 
-        if (otherRoot.TryGetComponent<IDamageable>(out var damageable))
+        IDamageable damageable = null;
+        bool hasDamageable = otherRoot.TryGetComponent<IDamageable>(out damageable);
+
+        if (hasDamageable)
         {
             bool allowDamage = true;
             if (limitDamageToTag && !string.IsNullOrEmpty(damageOnlyTag))
@@ -87,11 +99,9 @@ public class Projectile : MonoBehaviour
                 if (!otherRoot.CompareTag(damageOnlyTag)) allowDamage = false;
             }
 
-            bool frozenBefore = false;
-            if (otherRoot.TryGetComponent<Health>(out var h1))
-            {
-                frozenBefore = h1.IsFrozen;
-            }
+            Health h = null;
+            bool hasHealth = otherRoot.TryGetComponent<Health>(out h);
+            bool frozenBefore = hasHealth && h.IsFrozen;
 
             if (allowDamage)
             {
@@ -99,32 +109,42 @@ public class Projectile : MonoBehaviour
 
                 if (projectileType == ProjectileType.Ice)
                 {
-                    if (otherRoot.TryGetComponent<Health>(out var h2))
+                    if (clearFreezeOnHit)
                     {
-                        h2.ApplyFreeze(iceFreezeDuration);
-                        if (bonusDamageIfTargetFrozen > 0f)
+                        if (hasHealth && h != null)
                         {
-                            if (h2.IsFrozen || frozenBefore)
-                            {
-                                damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
-                            }
+                            h.ClearFreeze();
                         }
-                    }
-                    else if (other.TryGetComponent<IFreezable>(out var freezable))
-                    {
-                        freezable.ApplyFreeze(iceFreezeDuration);
                     }
                     else
                     {
-                        var parentFreezable = other.GetComponentInParent<IFreezable>();
-                        if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
+                        if (hasHealth && h != null)
+                        {
+                            h.ApplyFreeze(iceFreezeDuration);
+                            if (bonusDamageIfTargetFrozen > 0f)
+                            {
+                                if (h.IsFrozen || frozenBefore)
+                                {
+                                    damageable.ApplyDamage(new DamageInfo(bonusDamageIfTargetFrozen, DamageType.Normal, owner));
+                                }
+                            }
+                        }
+                        else if (other.TryGetComponent<IFreezable>(out var freezable))
+                        {
+                            freezable.ApplyFreeze(iceFreezeDuration);
+                        }
+                        else
+                        {
+                            var parentFreezable = other.GetComponentInParent<IFreezable>();
+                            if (parentFreezable != null) parentFreezable.ApplyFreeze(iceFreezeDuration);
+                        }
                     }
                 }
                 else if (projectileType == ProjectileType.Fire)
                 {
-                    if (otherRoot.TryGetComponent<Health>(out var h3))
+                    if (hasHealth && h != null)
                     {
-                        h3.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
+                        h.ApplyDot(fireDotDamage, fireDotDuration, fireDotInterval, owner);
                     }
                 }
             }
@@ -144,18 +164,21 @@ public class Projectile : MonoBehaviour
         }
         else if (projectileType == ProjectileType.Ice)
         {
-            if (otherRoot.TryGetComponent<Health>(out var h4))
+            if (!hasDamageable && !clearFreezeOnHit)
             {
-                h4.ApplyFreeze(iceFreezeDuration);
-            }
-            else if (other.TryGetComponent<IFreezable>(out var freezable2))
-            {
-                freezable2.ApplyFreeze(iceFreezeDuration);
-            }
-            else
-            {
-                var parentFreezable2 = other.GetComponentInParent<IFreezable>();
-                if (parentFreezable2 != null) parentFreezable2.ApplyFreeze(iceFreezeDuration);
+                if (otherRoot.TryGetComponent<Health>(out var h4))
+                {
+                    h4.ApplyFreeze(iceFreezeDuration);
+                }
+                else if (other.TryGetComponent<IFreezable>(out var freezable2))
+                {
+                    freezable2.ApplyFreeze(iceFreezeDuration);
+                }
+                else
+                {
+                    var parentFreezable2 = other.GetComponentInParent<IFreezable>();
+                    if (parentFreezable2 != null) parentFreezable2.ApplyFreeze(iceFreezeDuration);
+                }
             }
         }
 
