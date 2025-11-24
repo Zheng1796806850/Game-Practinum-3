@@ -8,9 +8,15 @@ public class GunPickup : MonoBehaviour
         Electric
     }
 
+    [Header("Pickup")]
     public GunType gunType = GunType.Boop;
     public string playerTag = "Player";
     public bool destroyOnPickup = true;
+
+    [Header("Pickup FX")]
+    public AudioClip pickupClip;
+    [Range(0f, 1f)] public float pickupVolume = 1f;
+    public GameObject pickupVfxPrefab;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -28,6 +34,16 @@ public class GunPickup : MonoBehaviour
         else
         {
             guns.GiveElectricGun();
+        }
+
+        if (pickupClip != null)
+        {
+            AudioSource.PlayClipAtPoint(pickupClip, transform.position, pickupVolume);
+        }
+
+        if (pickupVfxPrefab != null)
+        {
+            Instantiate(pickupVfxPrefab, transform.position, Quaternion.identity);
         }
 
         if (destroyOnPickup)

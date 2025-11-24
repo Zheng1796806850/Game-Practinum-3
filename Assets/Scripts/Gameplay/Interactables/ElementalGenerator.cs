@@ -37,6 +37,13 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     [SerializeField] private MonoBehaviour[] prerequisites;
     [SerializeField] private bool drainOnPrerequisiteLost = true;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip activateClip;
+    [SerializeField] private AudioClip deactivateClip;
+    [Range(0f, 1f)][SerializeField] private float activateVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float deactivateVolume = 1f;
+
     public bool IsActivated { get; private set; }
     public float ChargePercent { get; private set; }
     public event Action<bool> OnActivatedChanged;
@@ -69,6 +76,11 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
                     lineSliders[i].value = 0f;
                 }
             }
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
         }
 
         ClampThresholds();
@@ -172,6 +184,14 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     {
         if (IsActivated == v) return;
         IsActivated = v;
+        if (IsActivated)
+        {
+            PlayActivateSound();
+        }
+        else
+        {
+            PlayDeactivateSound();
+        }
         OnActivatedChanged?.Invoke(IsActivated);
     }
 
@@ -181,8 +201,7 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
 
         if (IsActivated)
         {
-            IsActivated = false;
-            OnActivatedChanged?.Invoke(false);
+            SetActivated(false);
             changed = true;
         }
 
@@ -272,5 +291,21 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         }
 
         return true;
+    }
+
+    private void PlayActivateSound()
+    {
+        if (audioSource == null) return;
+        if (activateClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(activateClip, activateVolume);
+    }
+
+    private void PlayDeactivateSound()
+    {
+        if (audioSource == null) return;
+        if (deactivateClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(deactivateClip, deactivateVolume);
     }
 }

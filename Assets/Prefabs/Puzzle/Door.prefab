@@ -151,3 +151,10 @@ MonoBehaviour:
   openDistance: 6
   openSpeed: 3
   closeSpeed: 3
+  previewDuration: 1
+  holdDuration: 1
+  audioSource: {fileID: 0}
+  openClip: {fileID: 8300000, guid: 2ebdd8dffc2f08a439d335904481d192, type: 3}
+  closeClip: {fileID: 8300000, guid: 9a23b2c8823853f49af98c9b5305c834, type: 3}
+  openVolume: 1
+  closeVolume: 1

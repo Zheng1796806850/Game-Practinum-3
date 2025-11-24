@@ -263,6 +263,9 @@ MonoBehaviour:
   gunType: 0
   playerTag: Player
   destroyOnPickup: 1
+  pickupClip: {fileID: 8300000, guid: 3a1dc2a56b51cd34f92ef8f230ae6248, type: 3}
+  pickupVolume: 1
+  pickupVfxPrefab: {fileID: 8913030338391436506, guid: eb7e3edc191280848a97e4e52e63de01, type: 3}
 --- !u!114 &1591207066783157975
 MonoBehaviour:
   m_ObjectHideFlags: 0

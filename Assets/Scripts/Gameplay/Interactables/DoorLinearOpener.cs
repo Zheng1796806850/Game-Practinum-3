@@ -20,6 +20,13 @@ public class DoorLinearOpener : MonoBehaviour
     [SerializeField] private float previewDuration = 1f;
     [SerializeField] private float holdDuration = 1f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip openClip;
+    [SerializeField] private AudioClip closeClip;
+    [Range(0f, 1f)][SerializeField] private float openVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float closeVolume = 1f;
+
     public bool IsOpen { get; private set; }
 
     private Vector3 startPos;
@@ -28,13 +35,17 @@ public class DoorLinearOpener : MonoBehaviour
     public float OpenDistance => openDistance;
     public Vector3 DirectionVector => GetDirectionVector();
     public float PreviewDuration => previewDuration;
-
     public float HoldDuration => holdDuration;
 
     void Awake()
     {
         startPos = transform.position;
         targetPos = startPos + GetDirectionVector() * openDistance;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -46,17 +57,36 @@ public class DoorLinearOpener : MonoBehaviour
 
     public void Open()
     {
+        if (IsOpen) return;
         IsOpen = true;
+        PlayOpenSound();
     }
 
     public void Close()
     {
+        if (!IsOpen) return;
         IsOpen = false;
+        PlayCloseSound();
     }
 
     public void SetOpen(bool open)
     {
-        IsOpen = open;
+        if (open)
+        {
+            if (!IsOpen)
+            {
+                IsOpen = true;
+                PlayOpenSound();
+            }
+        }
+        else
+        {
+            if (IsOpen)
+            {
+                IsOpen = false;
+                PlayCloseSound();
+            }
+        }
     }
 
     private Vector3 GetDirectionVector()
@@ -69,6 +99,22 @@ public class DoorLinearOpener : MonoBehaviour
             case OpenDirection.Right: return Vector3.right;
             default: return Vector3.up;
         }
+    }
+
+    private void PlayOpenSound()
+    {
+        if (audioSource == null) return;
+        if (openClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(openClip, openVolume);
+    }
+
+    private void PlayCloseSound()
+    {
+        if (audioSource == null) return;
+        if (closeClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(closeClip, closeVolume);
     }
 
     private void OnDrawGizmosSelected()

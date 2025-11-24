@@ -66,6 +66,13 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     [SerializeField] private PressurePlateDetectionArea playerDetectionArea;
     [SerializeField] private PressurePlateDetectionArea enemyDetectionArea;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip activateClip;
+    [SerializeField] private AudioClip deactivateClip;
+    [Range(0f, 1f)][SerializeField] private float activateVolume = 1f;
+    [Range(0f, 1f)][SerializeField] private float deactivateVolume = 1f;
+
     public bool IsActivated { get; private set; }
     public float ChargePercent { get; private set; }
     public event Action<bool> OnActivatedChanged;
@@ -93,6 +100,10 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         CacheVisual();
         RefreshIndicator();
         AutoFindDetectionAreas();
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
     }
 
     void OnEnable()
@@ -127,9 +138,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
                 ChargePercent = 0f;
                 if (IsActivated)
                 {
-                    IsActivated = false;
-                    OnActivatedChanged?.Invoke(IsActivated);
-                    RefreshIndicator();
+                    SetActivated(false);
                 }
             }
             RefreshUI();
@@ -250,9 +259,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
 
         if (newActive != IsActivated)
         {
-            IsActivated = newActive;
-            OnActivatedChanged?.Invoke(IsActivated);
-            RefreshIndicator();
+            SetActivated(newActive);
         }
     }
 
@@ -581,5 +588,37 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         capturedRb = null;
         capturedOriginalParent = null;
         capturedHealth = null;
+    }
+
+    private void SetActivated(bool value)
+    {
+        if (IsActivated == value) return;
+        IsActivated = value;
+        if (IsActivated)
+        {
+            PlayActivateSound();
+        }
+        else
+        {
+            PlayDeactivateSound();
+        }
+        OnActivatedChanged?.Invoke(IsActivated);
+        RefreshIndicator();
+    }
+
+    private void PlayActivateSound()
+    {
+        if (audioSource == null) return;
+        if (activateClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(activateClip, activateVolume);
+    }
+
+    private void PlayDeactivateSound()
+    {
+        if (audioSource == null) return;
+        if (deactivateClip == null) return;
+        audioSource.Stop();
+        audioSource.PlayOneShot(deactivateClip, deactivateVolume);
     }
 }

@@ -202,6 +202,11 @@ MonoBehaviour:
   useSequentialMode: 0
   prerequisites: []
   drainOnPrerequisiteLost: 1
+  audioSource: {fileID: 0}
+  activateClip: {fileID: 8300000, guid: f313ab505738c49469d979bdf9181d09, type: 3}
+  deactivateClip: {fileID: 8300000, guid: 865ae343a3c675a4c95f3b37741753fc, type: 3}
+  activateVolume: 1
+  deactivateVolume: 1
 --- !u!61 &762622740273539922
 BoxCollider2D:
   m_ObjectHideFlags: 0

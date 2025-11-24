@@ -220,7 +220,7 @@ public class BoopGun : MonoBehaviour
             }
         }
 
-        if (owner != null)
+        if (!pullMode && owner != null)
         {
             var pc = owner.GetComponentInParent<PlayerController>();
             if (pc != null)
