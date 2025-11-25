@@ -12,6 +12,7 @@ public class EndSequenceTrigger : MonoBehaviour
     [System.Serializable]
     public class Segment
     {
+        [TextArea(2, 5)]
         public string text;
         public float fadeIn = 1f;
         public float hold = 1.5f;
@@ -48,6 +49,9 @@ public class EndSequenceTrigger : MonoBehaviour
     public FontStyle textStyle = FontStyle.Normal;
     public TextAnchor textAlignment = TextAnchor.MiddleCenter;
 
+    public bool revealLinesSequentially = false;
+    public float perLineRevealDelay = 0.5f;
+
     public UnityEvent onActivateEndPanel;
     public float delayBeforeOverlayFadeOutAfterPanel = 1f;
     public float overlayFadeOutDuration = 0.8f;
@@ -64,6 +68,8 @@ public class EndSequenceTrigger : MonoBehaviour
     private Text uiText;
     private CanvasGroup textGroup;
     private Coroutine running;
+
+    private static readonly char[] NewlineSplit = new[] { '\n' };
 
     private void Reset()
     {
@@ -209,12 +215,18 @@ public class EndSequenceTrigger : MonoBehaviour
         for (int i = 0; i < segments.Count; i++)
         {
             var seg = segments[i];
-            uiText.text = seg.text;
-            textGroup.alpha = 0f;
-            yield return FadeCanvasGroup(textGroup, 0f, 1f, Mathf.Max(0f, seg.fadeIn));
-            yield return WaitFor(seg.hold);
-            yield return FadeCanvasGroup(textGroup, 1f, 0f, Mathf.Max(0f, seg.fadeOut));
-            if (gapBetweenSegments > 0f) yield return WaitFor(gapBetweenSegments);
+            if (seg == null) continue;
+
+            bool canUseLineMode = revealLinesSequentially && !string.IsNullOrEmpty(seg.text) && seg.text.Contains("\n");
+
+            if (canUseLineMode)
+            {
+                yield return PlaySegmentLineByLine(seg);
+            }
+            else
+            {
+                yield return PlaySegmentSimple(seg);
+            }
         }
 
         uiText.text = "";
@@ -229,6 +241,71 @@ public class EndSequenceTrigger : MonoBehaviour
 
         Destroy(overlayRoot);
         running = null;
+    }
+
+    private IEnumerator PlaySegmentSimple(Segment seg)
+    {
+        uiText.text = seg.text;
+        textGroup.alpha = 0f;
+        yield return FadeCanvasGroup(textGroup, 0f, 1f, Mathf.Max(0f, seg.fadeIn));
+        yield return WaitFor(seg.hold);
+        yield return FadeCanvasGroup(textGroup, 1f, 0f, Mathf.Max(0f, seg.fadeOut));
+        if (gapBetweenSegments > 0f) yield return WaitFor(gapBetweenSegments);
+    }
+
+    private IEnumerator PlaySegmentLineByLine(Segment seg)
+    {
+        if (string.IsNullOrEmpty(seg.text))
+        {
+            yield return PlaySegmentSimple(seg);
+            yield break;
+        }
+
+        var lines = seg.text.Split(NewlineSplit, StringSplitOptions.None);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i] != null)
+            {
+                lines[i] = lines[i].Replace("\r", "");
+            }
+        }
+
+        if (lines.Length <= 1)
+        {
+            yield return PlaySegmentSimple(seg);
+            yield break;
+        }
+
+        uiText.text = "";
+        textGroup.alpha = 0f;
+
+        yield return FadeCanvasGroup(textGroup, 0f, 1f, Mathf.Max(0f, seg.fadeIn));
+
+        string current = "";
+        float delay = Mathf.Max(0f, perLineRevealDelay);
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (i == 0)
+            {
+                current = lines[i];
+            }
+            else
+            {
+                current += "\n" + lines[i];
+            }
+
+            uiText.text = current;
+
+            if (delay > 0f)
+                yield return WaitFor(delay);
+        }
+
+        if (seg.hold > 0f)
+            yield return WaitFor(seg.hold);
+
+        yield return FadeCanvasGroup(textGroup, 1f, 0f, Mathf.Max(0f, seg.fadeOut));
+        if (gapBetweenSegments > 0f) yield return WaitFor(gapBetweenSegments);
     }
 
     private IEnumerator FadeCanvasGroup(CanvasGroup cg, float from, float to, float duration)

@@ -5,6 +5,7 @@ public class EnemyAnimatorBinder : MonoBehaviour
 {
     public Animator animator;
     public string moveBoolParam = "IsMoving";
+    public string stunnedBoolParam = "IsStunned";
     public float speedThreshold = 0.05f;
     public bool useHorizontalSpeedOnly = true;
     public Health health;
@@ -20,8 +21,8 @@ public class EnemyAnimatorBinder : MonoBehaviour
 
     void Awake()
     {
-        if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (animator == null) animator = GetComponentInChildren<Animator>() ?? GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
         if (health == null) health = GetComponent<Health>();
     }
 
@@ -29,14 +30,32 @@ public class EnemyAnimatorBinder : MonoBehaviour
     {
         if (animator == null || rb == null) return;
 
-        if (health != null && health.IsFrozen)
+        bool stunned = false;
+        if (health != null)
         {
-            animator.SetBool(moveBoolParam, false);
+            stunned = health.IsFrozen;
+        }
+
+        if (!string.IsNullOrEmpty(stunnedBoolParam))
+        {
+            animator.SetBool(stunnedBoolParam, stunned);
+        }
+
+        if (stunned)
+        {
+            if (!string.IsNullOrEmpty(moveBoolParam))
+            {
+                animator.SetBool(moveBoolParam, false);
+            }
             return;
         }
 
         float speed = useHorizontalSpeedOnly ? Mathf.Abs(rb.linearVelocity.x) : rb.linearVelocity.magnitude;
         bool moving = speed >= speedThreshold;
-        animator.SetBool(moveBoolParam, moving);
+
+        if (!string.IsNullOrEmpty(moveBoolParam))
+        {
+            animator.SetBool(moveBoolParam, moving);
+        }
     }
 }

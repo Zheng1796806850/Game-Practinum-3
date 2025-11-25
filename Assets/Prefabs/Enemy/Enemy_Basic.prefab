@@ -611,7 +611,7 @@ MonoBehaviour:
   wallCheckDistance: 1.13
   groundMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 4160
   graphics: {fileID: 0}
   patrolMode: 0
   turnPoints: []
@@ -622,7 +622,7 @@ MonoBehaviour:
   maxDecel: 40
   capHorizontalSpeed: 0
   maxHorizontalSpeed: 8
-  restrictFlipToGrounded: 1
+  restrictFlipToGrounded: 0
   flipCooldown: 0.3
 --- !u!114 &653251711636155172
 MonoBehaviour:

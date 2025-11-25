@@ -18,6 +18,9 @@ public class GunPickup : MonoBehaviour
     [Range(0f, 1f)] public float pickupVolume = 1f;
     public GameObject pickupVfxPrefab;
 
+    [Header("Destroy Somethings")]
+    public GameObject[] objectsToDestroyOnPickup;
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag(playerTag)) return;
@@ -49,6 +52,13 @@ public class GunPickup : MonoBehaviour
         if (destroyOnPickup)
         {
             Destroy(gameObject);
+            foreach (GameObject obj in objectsToDestroyOnPickup)
+            {
+                if (obj != null)
+                {
+                    Destroy(obj);
+                }
+            }
         }
         else
         {

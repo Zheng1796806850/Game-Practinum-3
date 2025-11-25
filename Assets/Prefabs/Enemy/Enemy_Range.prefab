@@ -750,9 +750,9 @@ MonoBehaviour:
   wallCheckDistance: 0.85
   groundMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 4160
   stopAtEdgeDuringChase: 1
-  restrictFlipToGrounded: 1
+  restrictFlipToGrounded: 0
   flipCooldown: 0.3
   useRectDetection: 1
   detectLeft: 4

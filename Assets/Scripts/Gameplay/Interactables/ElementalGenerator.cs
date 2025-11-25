@@ -52,6 +52,9 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     private float lastHitTime = -999f;
     private float targetChargePercent;
 
+    private bool hasPlayedActivationStartSound;
+    private float lastChargePercent;
+
     private void Awake()
     {
         if (generatorBars != null)
@@ -98,6 +101,9 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             IsActivated = false;
         }
 
+        lastChargePercent = ChargePercent;
+        hasPlayedActivationStartSound = false;
+
         EvaluateActivation();
         RefreshUI();
     }
@@ -114,10 +120,10 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
         {
             if (!Mathf.Approximately(ChargePercent, targetChargePercent))
             {
+                float previousCharge = ChargePercent;
                 float maxDelta = 100f / Mathf.Max(0.0001f, fullChargeDuration) * Time.deltaTime;
                 ChargePercent = Mathf.MoveTowards(ChargePercent, targetChargePercent, maxDelta);
-                EvaluateActivation();
-                RefreshUI();
+                HandleChargeChanged(previousCharge);
             }
         }
     }
@@ -147,13 +153,40 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
 
         if (fullChargeDuration <= 0f)
         {
+            float previousCharge = ChargePercent;
             ChargePercent = targetChargePercent;
-            EvaluateActivation();
-            RefreshUI();
+            HandleChargeChanged(previousCharge);
         }
 
         lastHitFrame = Time.frameCount;
         lastHitTime = Time.time;
+    }
+
+    private void HandleChargeChanged(float previousCharge)
+    {
+        float currentCharge = ChargePercent;
+        if (Mathf.Approximately(currentCharge, previousCharge)) return;
+
+        TryPlayActivationStartSound(previousCharge, currentCharge);
+
+        EvaluateActivation();
+        RefreshUI();
+
+        lastChargePercent = currentCharge;
+    }
+
+    private void TryPlayActivationStartSound(float previousCharge, float currentCharge)
+    {
+        if (hasPlayedActivationStartSound) return;
+        if (IsActivated) return;
+        if (audioSource == null) return;
+        if (activateClip == null) return;
+
+        if (currentCharge > previousCharge)
+        {
+            PlayActivateSound();
+            hasPlayedActivationStartSound = true;
+        }
     }
 
     private bool Accepts(Projectile proj)
@@ -184,14 +217,13 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
     {
         if (IsActivated == v) return;
         IsActivated = v;
-        if (IsActivated)
-        {
-            PlayActivateSound();
-        }
-        else
+
+        if (!IsActivated)
         {
             PlayDeactivateSound();
+            hasPlayedActivationStartSound = false;
         }
+
         OnActivatedChanged?.Invoke(IsActivated);
     }
 
@@ -210,6 +242,9 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
             ChargePercent = 0f;
             targetChargePercent = 0f;
         }
+
+        lastChargePercent = ChargePercent;
+        hasPlayedActivationStartSound = false;
 
         RefreshUI();
     }
@@ -259,6 +294,8 @@ public class ElementalGenerator : MonoBehaviour, ISwitch
                 targetChargePercent = 0f;
                 IsActivated = false;
             }
+            lastChargePercent = ChargePercent;
+            hasPlayedActivationStartSound = false;
             RefreshUI();
         }
     }

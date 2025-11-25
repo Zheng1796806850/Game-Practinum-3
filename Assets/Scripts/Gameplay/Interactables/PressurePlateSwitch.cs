@@ -34,6 +34,15 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     [SerializeField] private bool parentCapturedEnemyToAnchor = true;
     [SerializeField] private bool allowPlayerToActivateEnemyPlate = false;
 
+    [Header("Enemy Capture Movement")]
+    [SerializeField] private bool useCaptureLerp = true;
+    [SerializeField] private float captureMoveDuration = 0.25f;
+
+    [Header("Enemy Release")]
+    [SerializeField] private Transform releasePoint;
+    [SerializeField] private bool useReleaseLerp = true;
+    [SerializeField] private float releaseMoveDuration = 0.25f;
+
     [Header("Charge (%)")]
     [Range(0f, 100f)][SerializeField] private float activationPercent = 100f;
     [Range(0f, 100f)][SerializeField] private float deactivationPercent = 80f;
@@ -91,19 +100,40 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     private float capturedOriginalGravityScale;
     private Health capturedHealth;
 
+    private bool isCapturingEnemy;
+    private float captureMoveTimer;
+    private Vector3 captureStartPos;
+
+    private bool isReleasingEnemy;
+    private float releaseMoveTimer;
+    private Vector3 releaseStartPos;
+
+    private Vector3 capturedRootOriginalLocalScale;
+    private Transform[] capturedGraphicsTransforms;
+    private Vector3[] capturedGraphicsOriginalLocalScales;
+    private SpriteRenderer[] capturedSpriteRenderers;
+    private bool[] capturedSpriteRenderersOriginalFlipX;
+
     private static readonly List<PressurePlateSwitch> allPlates = new List<PressurePlateSwitch>();
+
+    private bool hadActiveOccupantLastFrame;
+    private bool hasPlayedStartSound;
 
     void Awake()
     {
         if (!allPlates.Contains(this)) allPlates.Add(this);
         InitUI();
         CacheVisual();
+        ClampThresholds();
         RefreshIndicator();
         AutoFindDetectionAreas();
+        if (captureAnchor == null) captureAnchor = transform;
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>();
         }
+        hadActiveOccupantLastFrame = false;
+        hasPlayedStartSound = false;
     }
 
     void OnEnable()
@@ -143,8 +173,18 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
             }
             RefreshUI();
             UpdatePlateVisual(false);
+            hadActiveOccupantLastFrame = false;
+            hasPlayedStartSound = false;
+            UpdateCaptureMovement();
+            UpdateReleaseMovement();
             return;
         }
+
+        if (hasActiveOccupant && !hadActiveOccupantLastFrame)
+        {
+            TryPlayStartSound();
+        }
+        hadActiveOccupantLastFrame = hasActiveOccupant;
 
         if (hasActiveOccupant)
         {
@@ -154,11 +194,17 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         else if (!hasActiveOccupant && decayPerSecondPercent > 0f)
         {
             ChargePercent = Mathf.Clamp(ChargePercent - decayPerSecondPercent * Time.deltaTime, 0f, 100f);
+            if (Mathf.Approximately(ChargePercent, 0f))
+            {
+                hasPlayedStartSound = false;
+            }
         }
 
         EvaluateActivation();
         RefreshUI();
         UpdatePlateVisual(hideWhenPlayerOrEnemyOnTop && qualifyingOccupants > 0);
+        UpdateCaptureMovement();
+        UpdateReleaseMovement();
     }
 
     private bool HasActiveOccupant()
@@ -221,10 +267,10 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         if (capturedRoot == null) return;
         if (other == null) return;
 
-        var proj = other.GetComponentInParent<Projectile>();
+        Projectile proj = other.GetComponentInParent<Projectile>();
         if (proj == null) return;
 
-        var payload = other.GetComponent<GeneratorChargePayload>();
+        GeneratorChargePayload payload = other.GetComponent<GeneratorChargePayload>();
         if (payload == null)
         {
             payload = other.GetComponentInParent<GeneratorChargePayload>();
@@ -277,7 +323,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         {
             for (int i = 0; i < lineSliders.Length; i++)
             {
-                var s = lineSliders[i];
+                Slider s = lineSliders[i];
                 if (s != null)
                 {
                     s.maxValue = 1f;
@@ -301,7 +347,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
 
             for (int i = 0; i < n; i++)
             {
-                var s = lineSliders[i];
+                Slider s = lineSliders[i];
                 if (s == null) continue;
 
                 float segment = Mathf.Clamp01(scaled - i);
@@ -420,6 +466,14 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
             isEnemy = true;
         }
 
+        if (plateType == PlateType.EnemySpecific)
+        {
+            bool playerValid = allowPlayerToActivateEnemyPlate && isPlayer;
+            return playerValid;
+        }
+
+        if (!allowPlayer && !allowEnemies) return false;
+
         if (isPlayer && !allowPlayer) isPlayer = false;
         if (isEnemy && !allowEnemies) isEnemy = false;
 
@@ -449,9 +503,10 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         if (prerequisites == null || prerequisites.Length == 0) return true;
         for (int i = 0; i < prerequisites.Length; i++)
         {
-            var mb = prerequisites[i];
+            MonoBehaviour mb = prerequisites[i];
             if (mb == null) return false;
-            if (mb is ISwitch sw)
+            ISwitch sw = mb as ISwitch;
+            if (sw != null)
             {
                 if (!sw.IsActivated) return false;
             }
@@ -465,10 +520,10 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
 
     private void AutoFindDetectionAreas()
     {
-        var areas = GetComponentsInChildren<PressurePlateDetectionArea>(true);
+        PressurePlateDetectionArea[] areas = GetComponentsInChildren<PressurePlateDetectionArea>(true);
         for (int i = 0; i < areas.Length; i++)
         {
-            var a = areas[i];
+            PressurePlateDetectionArea a = areas[i];
             if (a == null) continue;
             if (a.Owner != this) continue;
 
@@ -488,7 +543,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         if (enemyCol == null) return;
         for (int i = 0; i < allPlates.Count; i++)
         {
-            var p = allPlates[i];
+            PressurePlateSwitch p = allPlates[i];
             if (p == null) continue;
             p.OnEnemyBooped(enemyCol, true);
         }
@@ -499,7 +554,7 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         if (enemyCol == null) return;
         for (int i = 0; i < allPlates.Count; i++)
         {
-            var p = allPlates[i];
+            PressurePlateSwitch p = allPlates[i];
             if (p == null) continue;
             p.OnEnemyBooped(enemyCol, false);
         }
@@ -531,11 +586,13 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
     {
         if (enemyCol == null) return;
 
-        var root = enemyCol.attachedRigidbody ? enemyCol.attachedRigidbody.transform : enemyCol.transform;
+        Transform root = enemyCol.attachedRigidbody ? enemyCol.attachedRigidbody.transform : enemyCol.transform;
         capturedCollider = enemyCol;
         capturedRoot = root;
         capturedRb = root.GetComponent<Rigidbody2D>();
         capturedHealth = root.GetComponent<Health>();
+
+        CacheCapturedEnemyOrientation(root);
 
         if (capturedRb != null)
         {
@@ -548,13 +605,14 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
 
         capturedOriginalParent = root.parent;
 
-        if (parentCapturedEnemyToAnchor && captureAnchor != null)
+        captureStartPos = root.position;
+        captureMoveTimer = 0f;
+        isCapturingEnemy = true;
+
+        if (!useCaptureLerp || captureMoveDuration <= 0f)
         {
-            root.position = captureAnchor.position;
-        }
-        else
-        {
-            root.position = transform.position;
+            FinalizeCapturedEnemyAtAnchor();
+            isCapturingEnemy = false;
         }
 
         if (capturedHealth != null && captureFreezeDuration > 0f)
@@ -563,9 +621,241 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         }
     }
 
-    private void ReleaseCapturedEnemyInternal(bool destroying)
+    private void UpdateCaptureMovement()
+    {
+        if (!isCapturingEnemy) return;
+        if (capturedRoot == null)
+        {
+            isCapturingEnemy = false;
+            return;
+        }
+
+        if (!useCaptureLerp || captureMoveDuration <= 0f)
+        {
+            FinalizeCapturedEnemyAtAnchor();
+            isCapturingEnemy = false;
+            return;
+        }
+
+        captureMoveTimer += Time.deltaTime;
+        float duration = Mathf.Max(0.0001f, captureMoveDuration);
+        float t = Mathf.Clamp01(captureMoveTimer / duration);
+        Vector3 targetPos = captureAnchor != null ? captureAnchor.position : transform.position;
+        capturedRoot.position = Vector3.Lerp(captureStartPos, targetPos, t);
+
+        if (Mathf.Approximately(t, 1f))
+        {
+            FinalizeCapturedEnemyAtAnchor();
+            isCapturingEnemy = false;
+        }
+    }
+
+    private void FinalizeCapturedEnemyAtAnchor()
     {
         if (capturedRoot == null) return;
+
+        Vector3 targetPos = captureAnchor != null ? captureAnchor.position : transform.position;
+        capturedRoot.position = targetPos;
+
+        if (parentCapturedEnemyToAnchor && captureAnchor != null)
+        {
+            capturedRoot.parent = captureAnchor;
+            capturedRoot.rotation = captureAnchor.rotation;
+        }
+
+        ForceCapturedEnemyFaceRight(capturedRoot);
+    }
+
+    private void ForceCapturedEnemyFaceRight(Transform root)
+    {
+        if (root == null) return;
+
+        SetTransformFacingRight(root);
+
+        EnemyPatrol patrol = root.GetComponent<EnemyPatrol>();
+        if (patrol != null && patrol.graphics != null)
+        {
+            SetTransformFacingRight(patrol.graphics);
+        }
+
+        EnemyRangedCharger ranged = root.GetComponent<EnemyRangedCharger>();
+        if (ranged != null && ranged.graphics != null)
+        {
+            SetTransformFacingRight(ranged.graphics);
+        }
+
+        Enemy enemy = root.GetComponent<Enemy>();
+        if (enemy != null && enemy.graphics != null)
+        {
+            SetTransformFacingRight(enemy.graphics);
+        }
+
+        SpriteRenderer[] sprites = root.GetComponentsInChildren<SpriteRenderer>();
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            sprites[i].flipX = false;
+        }
+    }
+
+    private void SetTransformFacingRight(Transform t)
+    {
+        if (t == null) return;
+        Vector3 s = t.localScale;
+        if (s.x < 0f) s.x = -s.x;
+        t.localScale = s;
+    }
+
+    private void CacheCapturedEnemyOrientation(Transform root)
+    {
+        if (root == null)
+        {
+            capturedGraphicsTransforms = null;
+            capturedGraphicsOriginalLocalScales = null;
+            capturedSpriteRenderers = null;
+            capturedSpriteRenderersOriginalFlipX = null;
+            return;
+        }
+
+        capturedRootOriginalLocalScale = root.localScale;
+
+        List<Transform> graphicsList = new List<Transform>();
+
+        EnemyPatrol patrol = root.GetComponent<EnemyPatrol>();
+        if (patrol != null && patrol.graphics != null)
+        {
+            graphicsList.Add(patrol.graphics);
+        }
+
+        EnemyRangedCharger ranged = root.GetComponent<EnemyRangedCharger>();
+        if (ranged != null && ranged.graphics != null && !graphicsList.Contains(ranged.graphics))
+        {
+            graphicsList.Add(ranged.graphics);
+        }
+
+        Enemy enemy = root.GetComponent<Enemy>();
+        if (enemy != null && enemy.graphics != null && !graphicsList.Contains(enemy.graphics))
+        {
+            graphicsList.Add(enemy.graphics);
+        }
+
+        if (graphicsList.Count > 0)
+        {
+            capturedGraphicsTransforms = graphicsList.ToArray();
+            capturedGraphicsOriginalLocalScales = new Vector3[graphicsList.Count];
+            for (int i = 0; i < graphicsList.Count; i++)
+            {
+                capturedGraphicsOriginalLocalScales[i] = graphicsList[i].localScale;
+            }
+        }
+        else
+        {
+            capturedGraphicsTransforms = null;
+            capturedGraphicsOriginalLocalScales = null;
+        }
+
+        SpriteRenderer[] sprites = root.GetComponentsInChildren<SpriteRenderer>();
+        if (sprites != null && sprites.Length > 0)
+        {
+            capturedSpriteRenderers = sprites;
+            capturedSpriteRenderersOriginalFlipX = new bool[sprites.Length];
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                capturedSpriteRenderersOriginalFlipX[i] = sprites[i].flipX;
+            }
+        }
+        else
+        {
+            capturedSpriteRenderers = null;
+            capturedSpriteRenderersOriginalFlipX = null;
+        }
+    }
+
+    private void RestoreCapturedEnemyOrientation()
+    {
+        if (capturedRoot != null)
+        {
+            capturedRoot.localScale = capturedRootOriginalLocalScale;
+        }
+
+        if (capturedGraphicsTransforms != null && capturedGraphicsOriginalLocalScales != null)
+        {
+            int len = Mathf.Min(capturedGraphicsTransforms.Length, capturedGraphicsOriginalLocalScales.Length);
+            for (int i = 0; i < len; i++)
+            {
+                if (capturedGraphicsTransforms[i] != null)
+                {
+                    capturedGraphicsTransforms[i].localScale = capturedGraphicsOriginalLocalScales[i];
+                }
+            }
+        }
+
+        if (capturedSpriteRenderers != null && capturedSpriteRenderersOriginalFlipX != null)
+        {
+            int len = Mathf.Min(capturedSpriteRenderers.Length, capturedSpriteRenderersOriginalFlipX.Length);
+            for (int i = 0; i < len; i++)
+            {
+                if (capturedSpriteRenderers[i] != null)
+                {
+                    capturedSpriteRenderers[i].flipX = capturedSpriteRenderersOriginalFlipX[i];
+                }
+            }
+        }
+    }
+
+    private void ClearCapturedEnemyOrientationCache()
+    {
+        capturedGraphicsTransforms = null;
+        capturedGraphicsOriginalLocalScales = null;
+        capturedSpriteRenderers = null;
+        capturedSpriteRenderersOriginalFlipX = null;
+    }
+
+    private void UpdateReleaseMovement()
+    {
+        if (!isReleasingEnemy) return;
+        if (capturedRoot == null)
+        {
+            isReleasingEnemy = false;
+            return;
+        }
+
+        if (releasePoint == null || !useReleaseLerp || releaseMoveDuration <= 0f)
+        {
+            FinalizeRelease();
+            isReleasingEnemy = false;
+            return;
+        }
+
+        releaseMoveTimer += Time.deltaTime;
+        float duration = Mathf.Max(0.0001f, releaseMoveDuration);
+        float t = Mathf.Clamp01(releaseMoveTimer / duration);
+        capturedRoot.position = Vector3.Lerp(releaseStartPos, releasePoint.position, t);
+
+        if (Mathf.Approximately(t, 1f))
+        {
+            FinalizeRelease();
+            isReleasingEnemy = false;
+        }
+    }
+
+    private void FinalizeRelease()
+    {
+        if (capturedRoot == null)
+        {
+            ClearCapturedEnemyOrientationCache();
+            capturedCollider = null;
+            capturedRb = null;
+            capturedOriginalParent = null;
+            capturedHealth = null;
+            return;
+        }
+
+        RestoreCapturedEnemyOrientation();
+
+        if (releasePoint != null)
+        {
+            capturedRoot.position = releasePoint.position;
+        }
 
         if (capturedRb != null)
         {
@@ -588,22 +878,86 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         capturedRb = null;
         capturedOriginalParent = null;
         capturedHealth = null;
+        ClearCapturedEnemyOrientationCache();
+    }
+
+    private void ReleaseCapturedEnemyInternal(bool destroying)
+    {
+        isCapturingEnemy = false;
+        isReleasingEnemy = false;
+
+        if (capturedRoot == null)
+        {
+            ClearCapturedEnemyOrientationCache();
+            capturedCollider = null;
+            capturedRb = null;
+            capturedOriginalParent = null;
+            capturedHealth = null;
+            return;
+        }
+
+        if (destroying)
+        {
+            RestoreCapturedEnemyOrientation();
+
+            if (capturedRb != null)
+            {
+                capturedRb.constraints = capturedOriginalConstraints;
+                capturedRb.gravityScale = capturedOriginalGravityScale;
+            }
+
+            if (parentCapturedEnemyToAnchor && capturedRoot != null)
+            {
+                capturedRoot.parent = capturedOriginalParent;
+            }
+
+            if (capturedHealth != null)
+            {
+                capturedHealth.ClearFreeze();
+            }
+
+            capturedCollider = null;
+            capturedRoot = null;
+            capturedRb = null;
+            capturedOriginalParent = null;
+            capturedHealth = null;
+            ClearCapturedEnemyOrientationCache();
+            return;
+        }
+
+        if (releasePoint != null && useReleaseLerp && releaseMoveDuration > 0f)
+        {
+            releaseStartPos = capturedRoot.position;
+            releaseMoveTimer = 0f;
+            isReleasingEnemy = true;
+            return;
+        }
+
+        if (releasePoint != null)
+        {
+            capturedRoot.position = releasePoint.position;
+        }
+
+        FinalizeRelease();
     }
 
     private void SetActivated(bool value)
     {
         if (IsActivated == value) return;
         IsActivated = value;
-        if (IsActivated)
-        {
-            PlayActivateSound();
-        }
-        else
+        if (!IsActivated)
         {
             PlayDeactivateSound();
         }
         OnActivatedChanged?.Invoke(IsActivated);
         RefreshIndicator();
+    }
+
+    private void TryPlayStartSound()
+    {
+        if (hasPlayedStartSound) return;
+        PlayActivateSound();
+        hasPlayedStartSound = true;
     }
 
     private void PlayActivateSound()
@@ -620,5 +974,26 @@ public class PressurePlateSwitch : MonoBehaviour, ISwitch
         if (deactivateClip == null) return;
         audioSource.Stop();
         audioSource.PlayOneShot(deactivateClip, deactivateVolume);
+    }
+
+    private void ClampThresholds()
+    {
+        activationPercent = Mathf.Clamp(activationPercent, 0f, 100f);
+        deactivationPercent = Mathf.Clamp(deactivationPercent, 0f, activationPercent);
+        decayPerSecondPercent = Mathf.Max(0f, decayPerSecondPercent);
+        secondsFrom0To100 = Mathf.Max(0.0001f, secondsFrom0To100);
+        captureMoveDuration = Mathf.Max(0f, captureMoveDuration);
+        releaseMoveDuration = Mathf.Max(0f, releaseMoveDuration);
+    }
+
+
+
+
+    private void OnValidate()
+    {
+        ClampThresholds();
+        RefreshUI();
+        RefreshIndicator();
+        AutoFindDetectionAreas();
     }
 }

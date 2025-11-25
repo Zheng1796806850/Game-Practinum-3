@@ -27,10 +27,15 @@ public class DoorLinearOpener : MonoBehaviour
     [Range(0f, 1f)][SerializeField] private float openVolume = 1f;
     [Range(0f, 1f)][SerializeField] private float closeVolume = 1f;
 
+    [Header("Options")]
+    [SerializeField] private bool loopMoveSounds = false;
+    [SerializeField] private bool lockWhenFullyOpen = false;
+
     public bool IsOpen { get; private set; }
 
     private Vector3 startPos;
     private Vector3 targetPos;
+    private bool permanentlyOpen;
 
     public float OpenDistance => openDistance;
     public Vector3 DirectionVector => GetDirectionVector();
@@ -41,6 +46,7 @@ public class DoorLinearOpener : MonoBehaviour
     {
         startPos = transform.position;
         targetPos = startPos + GetDirectionVector() * openDistance;
+        permanentlyOpen = false;
 
         if (audioSource == null)
         {
@@ -52,7 +58,27 @@ public class DoorLinearOpener : MonoBehaviour
     {
         Vector3 goal = IsOpen ? targetPos : startPos;
         float spd = IsOpen ? openSpeed : closeSpeed;
+
         transform.position = Vector3.MoveTowards(transform.position, goal, spd * Time.deltaTime);
+
+        bool atGoal = (transform.position - goal).sqrMagnitude <= 0.0001f;
+
+        if (loopMoveSounds && audioSource != null && audioSource.loop && audioSource.isPlaying)
+        {
+            if (atGoal)
+            {
+                audioSource.loop = false;
+                audioSource.Stop();
+            }
+        }
+
+        if (lockWhenFullyOpen && !permanentlyOpen)
+        {
+            if (IsOpen && atGoal && (transform.position - targetPos).sqrMagnitude <= 0.0001f)
+            {
+                permanentlyOpen = true;
+            }
+        }
     }
 
     public void Open()
@@ -65,6 +91,7 @@ public class DoorLinearOpener : MonoBehaviour
     public void Close()
     {
         if (!IsOpen) return;
+        if (lockWhenFullyOpen && permanentlyOpen) return;
         IsOpen = false;
         PlayCloseSound();
     }
@@ -81,11 +108,10 @@ public class DoorLinearOpener : MonoBehaviour
         }
         else
         {
-            if (IsOpen)
-            {
-                IsOpen = false;
-                PlayCloseSound();
-            }
+            if (!IsOpen) return;
+            if (lockWhenFullyOpen && permanentlyOpen) return;
+            IsOpen = false;
+            PlayCloseSound();
         }
     }
 
@@ -105,16 +131,42 @@ public class DoorLinearOpener : MonoBehaviour
     {
         if (audioSource == null) return;
         if (openClip == null) return;
-        audioSource.Stop();
-        audioSource.PlayOneShot(openClip, openVolume);
+
+        if (loopMoveSounds)
+        {
+            audioSource.loop = true;
+            audioSource.clip = openClip;
+            audioSource.volume = openVolume;
+            audioSource.Stop();
+            audioSource.Play();
+        }
+        else
+        {
+            audioSource.loop = false;
+            audioSource.Stop();
+            audioSource.PlayOneShot(openClip, openVolume);
+        }
     }
 
     private void PlayCloseSound()
     {
         if (audioSource == null) return;
         if (closeClip == null) return;
-        audioSource.Stop();
-        audioSource.PlayOneShot(closeClip, closeVolume);
+
+        if (loopMoveSounds)
+        {
+            audioSource.loop = true;
+            audioSource.clip = closeClip;
+            audioSource.volume = closeVolume;
+            audioSource.Stop();
+            audioSource.Play();
+        }
+        else
+        {
+            audioSource.loop = false;
+            audioSource.Stop();
+            audioSource.PlayOneShot(closeClip, closeVolume);
+        }
     }
 
     private void OnDrawGizmosSelected()
