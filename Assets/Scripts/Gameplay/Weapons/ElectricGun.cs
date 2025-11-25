@@ -14,11 +14,15 @@ public class ElectricGun : MonoBehaviour
     public ParticleSystem chargeParticlesPrefab;
     public ParticleSystem releaseParticlesPrefab;
 
-    [Header("Audio")]
+    [Header("Audio Clips")]
     public AudioClip chargeLoopClip;
     public AudioClip fireClip;
     [Range(0f, 1f)] public float chargeVolume = 1f;
     [Range(0f, 1f)] public float fireVolume = 1f;
+
+    [Header("Audio Sources")]
+    public AudioSource chargeAudio;
+    public AudioSource fireAudio;
 
     [Header("Switch Filter")]
     public bool useSwitchTagFilter = true;
@@ -30,21 +34,17 @@ public class ElectricGun : MonoBehaviour
     private float cooldownRemain;
     private ParticleSystem chargeInstance;
     private Vector2 aimDir = Vector2.right;
-    private AudioSource chargeAudio;
-    private AudioSource fireAudio;
 
     void Awake()
     {
-        if (chargeAudio == null)
+        if (chargeAudio != null)
         {
-            chargeAudio = gameObject.AddComponent<AudioSource>();
             chargeAudio.playOnAwake = false;
             chargeAudio.loop = true;
             chargeAudio.spatialBlend = 0f;
         }
-        if (fireAudio == null)
+        if (fireAudio != null)
         {
-            fireAudio = gameObject.AddComponent<AudioSource>();
             fireAudio.playOnAwake = false;
             fireAudio.loop = false;
             fireAudio.spatialBlend = 0f;

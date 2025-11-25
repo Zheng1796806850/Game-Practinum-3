@@ -22,11 +22,15 @@ public class BoopGun : MonoBehaviour
     public LayerMask generatorMask;
     public float generatorProxySpeed = 20f;
 
-    [Header("Audio")]
+    [Header("Audio Clips")]
     public AudioClip chargeClip;
     public AudioClip fireClip;
     [Range(0f, 1f)] public float chargeVolume = 1f;
     [Range(0f, 1f)] public float fireVolume = 1f;
+
+    [Header("Audio Sources")]
+    public AudioSource chargeAudio;
+    public AudioSource fireAudio;
 
     [Header("Recoil")]
     [Range(0f, 1f)] public float verticalRecoilMultiplier = 0.5f;
@@ -41,21 +45,17 @@ public class BoopGun : MonoBehaviour
     private bool isOnCooldown;
     private float cooldownRemain;
     private Vector2 aimDir = Vector2.right;
-    private AudioSource chargeAudio;
-    private AudioSource fireAudio;
 
     void Awake()
     {
-        if (chargeAudio == null)
+        if (chargeAudio != null)
         {
-            chargeAudio = gameObject.AddComponent<AudioSource>();
             chargeAudio.playOnAwake = false;
             chargeAudio.loop = true;
             chargeAudio.spatialBlend = 0f;
         }
-        if (fireAudio == null)
+        if (fireAudio != null)
         {
-            fireAudio = gameObject.AddComponent<AudioSource>();
             fireAudio.playOnAwake = false;
             fireAudio.loop = false;
             fireAudio.spatialBlend = 0f;

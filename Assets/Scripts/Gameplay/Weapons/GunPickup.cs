@@ -14,6 +14,7 @@ public class GunPickup : MonoBehaviour
     public bool destroyOnPickup = true;
 
     [Header("Pickup FX")]
+    public AudioSource pickupAudioSource;
     public AudioClip pickupClip;
     [Range(0f, 1f)] public float pickupVolume = 1f;
     public GameObject pickupVfxPrefab;
@@ -41,7 +42,14 @@ public class GunPickup : MonoBehaviour
 
         if (pickupClip != null)
         {
-            AudioSource.PlayClipAtPoint(pickupClip, transform.position, pickupVolume);
+            if (pickupAudioSource != null)
+            {
+                pickupAudioSource.PlayOneShot(pickupClip, pickupVolume);
+            }
+            else
+            {
+                AudioSource.PlayClipAtPoint(pickupClip, transform.position, pickupVolume);
+            }
         }
 
         if (pickupVfxPrefab != null)
