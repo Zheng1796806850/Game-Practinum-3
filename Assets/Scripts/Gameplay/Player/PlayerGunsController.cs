@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class PlayerGunsController : MonoBehaviour
 {
-    public enum GunMode { Boop, Electric }
+    public enum GunMode
+    {
+        Boop,
+        Electric
+    }
 
     public GunMode mode = GunMode.Boop;
     public KeyCode switchKey = KeyCode.Q;
@@ -61,6 +65,7 @@ public class PlayerGunsController : MonoBehaviour
             boopGun.owner = gameObject;
             if (boopGun.firePoint == null && sharedFirePoint != null) boopGun.firePoint = sharedFirePoint;
         }
+
         if (electricGun != null)
         {
             electricGun.owner = gameObject;
@@ -82,6 +87,15 @@ public class PlayerGunsController : MonoBehaviour
         {
             hasBoopGun = boopGun != null;
             hasElectricGun = electricGun != null;
+        }
+
+        if (!CanUseBoopGun && CanUseElectricGun)
+        {
+            mode = GunMode.Electric;
+        }
+        else if (!CanUseElectricGun && CanUseBoopGun)
+        {
+            mode = GunMode.Boop;
         }
 
         boopBarCurrent = 0f;
@@ -120,7 +134,6 @@ public class PlayerGunsController : MonoBehaviour
                     boopGun.FireBoop();
                     boopBarCurrent -= boopShotCost;
                     if (boopBarCurrent < 0f) boopBarCurrent = 0f;
-                    if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
                 }
             }
 
@@ -131,11 +144,14 @@ public class PlayerGunsController : MonoBehaviour
                     boopGun.FireBoopPull();
                     boopBarCurrent -= boopShotCost;
                     if (boopBarCurrent < 0f) boopBarCurrent = 0f;
-                    if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
                 }
             }
 
-            if (bulletUI != null) bulletUI.UpdateCooldown01(boopGun != null ? boopGun.CooldownWheel01 : 0f);
+            if (bulletUI != null)
+            {
+                bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
+                bulletUI.UpdateCooldown01(boopGun != null ? boopGun.CooldownWheel01 : 0f);
+            }
         }
         else
         {
@@ -150,21 +166,28 @@ public class PlayerGunsController : MonoBehaviour
             }
 
             if (electricGun != null) electricGun.SetAimDirection(aimDir);
+
             if (Input.GetButtonDown(fireAxis))
             {
                 if (electricGun != null) electricGun.BeginCharge();
             }
+
             if (Input.GetButton(fireAxis))
             {
                 if (electricGun != null) electricGun.HoldCharge(Time.deltaTime);
                 if (bulletUI != null) bulletUI.UpdateElectricBar01(electricGun != null ? electricGun.Charge01 : 0f);
             }
+
             if (Input.GetButtonUp(fireAxis))
             {
                 if (electricGun != null) electricGun.ReleaseAndFire();
                 if (bulletUI != null) bulletUI.UpdateElectricBar01(0f);
             }
-            if (bulletUI != null) bulletUI.UpdateCooldown01(electricGun != null ? electricGun.CooldownWheel01 : 0f);
+
+            if (bulletUI != null)
+            {
+                bulletUI.UpdateCooldown01(electricGun != null ? electricGun.CooldownWheel01 : 0f);
+            }
         }
     }
 
@@ -174,7 +197,6 @@ public class PlayerGunsController : MonoBehaviour
         {
             boopBarCurrent += boopRegenPerSecond * Time.deltaTime;
             if (boopBarCurrent > boopBarMax) boopBarCurrent = boopBarMax;
-            if (bulletUI != null) bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
         }
     }
 
@@ -186,26 +208,14 @@ public class PlayerGunsController : MonoBehaviour
         {
             if (!CanUseElectricGun) return;
             mode = GunMode.Electric;
-            boopBarCurrent = 0f;
-            if (bulletUI != null)
-            {
-                bulletUI.ShowElectricOnly();
-                bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
-                bulletUI.UpdateElectricBar01(electricGun != null ? electricGun.Charge01 : 0f);
-                bulletUI.UpdateCooldown01(electricGun != null ? electricGun.CooldownWheel01 : 0f);
-            }
         }
         else
         {
             if (!CanUseBoopGun) return;
             mode = GunMode.Boop;
-            if (bulletUI != null)
-            {
-                bulletUI.ShowBoopOnly();
-                bulletUI.UpdateBoopBar(boopBarCurrent, boopBarMax);
-                bulletUI.UpdateCooldown01(boopGun != null ? boopGun.CooldownWheel01 : 0f);
-            }
         }
+
+        RefreshGunState();
     }
 
     private void RefreshGunState()
@@ -220,16 +230,25 @@ public class PlayerGunsController : MonoBehaviour
         if (bulletUI != null)
         {
             bulletUI.gameObject.SetActive(anyGun);
-            if (!anyGun) return;
 
-            if (mode == GunMode.Boop && !CanUseBoopGun && CanUseElectricGun)
+            if (!anyGun)
+            {
+                bulletUI.HideAll();
+                return;
+            }
+
+            if (!CanUseBoopGun && CanUseElectricGun)
             {
                 mode = GunMode.Electric;
             }
-            else if (mode == GunMode.Electric && !CanUseElectricGun && CanUseBoopGun)
+            else if (!CanUseElectricGun && CanUseBoopGun)
             {
                 mode = GunMode.Boop;
             }
+
+            bool boopIsActiveGun = mode == GunMode.Boop;
+
+            bulletUI.UpdateGunSlots(CanUseBoopGun, CanUseElectricGun, boopIsActiveGun);
 
             if (mode == GunMode.Boop)
             {
@@ -251,7 +270,7 @@ public class PlayerGunsController : MonoBehaviour
         if (Camera.main == null || weaponPivot == null) return Vector2.right;
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mouseWorld.z = weaponPivot.position.z;
-        Vector2 dir = (mouseWorld - weaponPivot.position);
+        Vector2 dir = mouseWorld - weaponPivot.position;
         if (dir.sqrMagnitude < 0.0001f) return Vector2.right;
         return dir.normalized;
     }
@@ -273,7 +292,7 @@ public class PlayerGunsController : MonoBehaviour
         if (invertFlipX) flip = !flip;
         for (int i = 0; i < spritesToFlip.Length; i++)
         {
-            var sr = spritesToFlip[i];
+            SpriteRenderer sr = spritesToFlip[i];
             if (sr != null) sr.flipX = flip;
         }
     }
@@ -285,13 +304,21 @@ public class PlayerGunsController : MonoBehaviour
 
     public void GiveBoopGun()
     {
-        hasBoopGun = true;
-        RefreshGunState();
+        if (!hasBoopGun)
+        {
+            hasBoopGun = true;
+            if (!CanUseElectricGun) mode = GunMode.Boop;
+            RefreshGunState();
+        }
     }
 
     public void GiveElectricGun()
     {
-        hasElectricGun = true;
-        RefreshGunState();
+        if (!hasElectricGun)
+        {
+            hasElectricGun = true;
+            if (!CanUseBoopGun) mode = GunMode.Electric;
+            RefreshGunState();
+        }
     }
 }
